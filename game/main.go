@@ -75,29 +75,26 @@ func unloadImages(images []*rl.Image) {
 	}
 }
 
-func castWalls(dirX float64, dirY float64, planeX float64, planeY float64, posX float64, posY float64, worldMap [][]int, walls []rl.Texture2D) {
+func castWalls(dir rl.Vector2, plane rl.Vector2, position rl.Vector2, worldMap [][]int, walls []rl.Texture2D) {
 	for x := 0; x < SCREEN_WIDTH; x++ {
-		cameraX := 2*float64(x)/float64(SCREEN_WIDTH) - 1
-		rayDirX := dirX + planeX*cameraX
-		rayDirY := dirY + planeY*cameraX
+		cameraX := 2*float32(x)/float32(SCREEN_WIDTH) - 1
+		rayDir := rl.NewVector2(dir.X+plane.X*cameraX, dir.Y+plane.Y*cameraX)
 
-		mapX, mapY := int(posX), int(posY)
-		var sideDistX float64
-		var sideDistY float64
+		mapX, mapY := int(position.X), int(position.Y)
+		var sideDist rl.Vector2
 
-		var deltaDistX float64
-		var deltaDistY float64
-		var prepWallDist float64
+		var deltaDist rl.Vector2
+		var prepWallDist float32
 
-		if rayDirX == 0 {
-			deltaDistX = 1e30
+		if rayDir.X == 0 {
+			deltaDist.X = 1e30
 		} else {
-			deltaDistX = math.Abs(1.0 / rayDirX)
+			deltaDist.X = float32(math.Abs(float64(1.0 / rayDir.X)))
 		}
-		if rayDirY == 0 {
-			deltaDistY = 1e30
+		if rayDir.Y == 0 {
+			deltaDist.Y = 1e30
 		} else {
-			deltaDistY = math.Abs(1.0 / rayDirY)
+			deltaDist.Y = float32(math.Abs(float64(1.0 / rayDir.Y)))
 		}
 
 		var stepX int
@@ -107,29 +104,29 @@ func castWalls(dirX float64, dirY float64, planeX float64, planeY float64, posX 
 		var side int
 
 		// Set step direction and set the distances to the next closest square
-		if rayDirX < 0 {
+		if rayDir.X < 0 {
 			stepX = -1
-			sideDistX = (posX - float64(mapX)) * deltaDistX
+			sideDist.X = (position.X - float32(mapX)) * deltaDist.X
 		} else {
 			stepX = 1
-			sideDistX = (float64(mapX+1) - posX) * deltaDistX
+			sideDist.X = (float32(mapX+1) - position.X) * deltaDist.X
 		}
-		if rayDirY < 0 {
+		if rayDir.Y < 0 {
 			stepY = -1
-			sideDistY = (posY - float64(mapY)) * deltaDistY
+			sideDist.Y = (position.Y - float32(mapY)) * deltaDist.Y
 		} else {
 			stepY = 1
-			sideDistY = (float64(mapY+1) - posY) * deltaDistY
+			sideDist.Y = (float32(mapY+1) - position.Y) * deltaDist.Y
 		}
 
 		for hit == 0 {
 			// Jump to the next square in the X direction or Y direction
-			if sideDistX < sideDistY {
-				sideDistX += deltaDistX
+			if sideDist.X < sideDist.Y {
+				sideDist.X += deltaDist.X
 				mapX += stepX
 				side = 0
 			} else {
-				sideDistY += deltaDistY
+				sideDist.Y += deltaDist.Y
 				mapY += stepY
 				side = 1
 			}
@@ -140,16 +137,16 @@ func castWalls(dirX float64, dirY float64, planeX float64, planeY float64, posX 
 			}
 		}
 
-		var wallX float64
+		var wallX float32
 
 		if side == 0 {
-			prepWallDist = sideDistX - deltaDistX
-			wallX = posY + prepWallDist*rayDirY
+			prepWallDist = sideDist.X - deltaDist.X
+			wallX = position.Y + prepWallDist*rayDir.Y
 		} else {
-			prepWallDist = sideDistY - deltaDistY
-			wallX = posX + prepWallDist*rayDirX
+			prepWallDist = sideDist.Y - deltaDist.Y
+			wallX = position.X + prepWallDist*rayDir.X
 		}
-		wallX -= math.Floor(wallX)
+		wallX -= float32(math.Floor(float64(wallX)))
 
 		lineHeight := int(SCREEN_HEIGHT / prepWallDist)
 
@@ -176,34 +173,33 @@ func castWalls(dirX float64, dirY float64, planeX float64, planeY float64, posX 
 	}
 }
 
-func castCeiling(dirX float64, dirY float64, planeX float64, planeY float64, posX float64, posY float64, floorTexture []color.RGBA, ceilingTexture []color.RGBA, pixels []color.RGBA, floorCeilTexture rl.Texture2D) {
+func castCeiling(dir rl.Vector2, plane rl.Vector2, position rl.Vector2, floorTexture []color.RGBA, ceilingTexture []color.RGBA, pixels []color.RGBA, floorCeilTexture rl.Texture2D) {
 	for y := 0; y < SCREEN_HEIGHT; y++ {
-		rayDirX0 := dirX - planeX
-		rayDirY0 := dirY - planeY
-		rayDirX1 := dirX + planeX
-		rayDirY1 := dirY + planeY
+		rayDir0 := rl.NewVector2(dir.X-plane.X, dir.Y-plane.Y)
+		rayDir1 := rl.NewVector2(dir.X+plane.X, dir.Y+plane.Y)
 
-		p := float64(y) - SCREEN_HEIGHT/2
+		p := float32(y) - SCREEN_HEIGHT/2
 
-		posZ := 0.5 * SCREEN_HEIGHT
+		posZ := float32(0.5 * SCREEN_HEIGHT)
 
 		rowDistance := posZ / p
 
-		floorStepX := rowDistance * (rayDirX1 - rayDirX0) / SCREEN_WIDTH
-		floorStepY := rowDistance * (rayDirY1 - rayDirY0) / SCREEN_WIDTH
+		floorStep := rl.NewVector2(
+			rowDistance*(rayDir1.X-rayDir0.X)/SCREEN_WIDTH,
+			rowDistance*(rayDir1.Y-rayDir0.Y)/SCREEN_WIDTH,
+		)
 
-		floorX := posX + rowDistance*rayDirX0
-		floorY := posY + rowDistance*rayDirY0
+		floor := rl.NewVector2(position.X+rowDistance*rayDir0.X, position.Y+rowDistance*rayDir0.Y)
 
 		for x := 0; x < SCREEN_WIDTH; x++ {
-			cellX := int(floorX)
-			cellY := int(floorY)
+			cellX := int(floor.X)
+			cellY := int(floor.Y)
 
-			tx := int32(TEXTURE_WIDTH*(floorX-float64(cellX))) & (TEXTURE_WIDTH - 1)
-			ty := int32(TEXTURE_HEIGHT*(floorY-float64(cellY))) & (TEXTURE_HEIGHT - 1)
+			tx := int32(TEXTURE_WIDTH*(floor.X-float32(cellX))) & (TEXTURE_WIDTH - 1)
+			ty := int32(TEXTURE_HEIGHT*(floor.Y-float32(cellY))) & (TEXTURE_HEIGHT - 1)
 
-			floorX += floorStepX
-			floorY += floorStepY
+			floor.X += floorStep.X
+			floor.Y += floorStep.Y
 
 			color := floorTexture[TEXTURE_WIDTH*ty+tx]
 			pixels[SCREEN_WIDTH*y+x] = color
@@ -236,9 +232,9 @@ func main() {
 	ceilingTexture := rl.LoadImageColors(wallsImages[6])
 
 	// Camera settings
-	posX, posY := 22.0, 12.0
-	dirX, dirY := -1.0, 0.0
-	planeX, planeY := 0.0, 0.66
+	position := rl.NewVector2(22.0, 12.0)
+	dir := rl.NewVector2(-1.0, 0.0)
+	plane := rl.NewVector2(0.0, 0.66)
 
 	// Time and physics initialization
 	currentTime, oldTime := time.Now().UnixMilli(), int64(0)
@@ -248,8 +244,8 @@ func main() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
 
-		castCeiling(dirX, dirY, planeX, planeY, posX, posY, floorTexture, ceilingTexture, pixels, floorCeilTexture)
-		castWalls(dirX, dirY, planeX, planeY, posX, posY, worldMap, walls)
+		castCeiling(dir, plane, position, floorTexture, ceilingTexture, pixels, floorCeilTexture)
+		castWalls(dir, plane, position, worldMap, walls)
 
 		// Timing for FPS counter
 		oldTime = currentTime
@@ -257,40 +253,40 @@ func main() {
 		frameTime := (float64(currentTime) - float64(oldTime)) / 1000.0
 		rl.DrawText(fmt.Sprintf("FPS: %d", int(1.0/frameTime)), 10, 10, 30, rl.White)
 
-		moveSpeed := frameTime * 3.0
-		rotSpeed := frameTime * 3.0
+		moveSpeed := float32(frameTime * 3.0)
+		rotSpeed := float32(frameTime * 3.0)
 
 		if rl.IsKeyDown(rl.KeyUp) {
-			if worldMap[int(posX+dirX*moveSpeed)][int(posY)] == 0 {
-				posX += dirX * moveSpeed
+			if worldMap[int(position.X+dir.X*moveSpeed)][int(position.Y)] == 0 {
+				position.X += dir.X * moveSpeed
 			}
-			if worldMap[int(posX)][int(posY+dirY*moveSpeed)] == 0 {
-				posY += dirY * moveSpeed
+			if worldMap[int(position.X)][int(position.Y+dir.Y*moveSpeed)] == 0 {
+				position.Y += dir.Y * moveSpeed
 			}
 		}
 		if rl.IsKeyDown(rl.KeyDown) {
-			if worldMap[int(posX-dirX*moveSpeed)][int(posY)] == 0 {
-				posX -= dirX * moveSpeed
+			if worldMap[int(position.X-dir.X*moveSpeed)][int(position.Y)] == 0 {
+				position.X -= dir.X * moveSpeed
 			}
-			if worldMap[int(posX)][int(posY-dirY*moveSpeed)] == 0 {
-				posY -= dirY * moveSpeed
+			if worldMap[int(position.X)][int(position.Y-dir.Y*moveSpeed)] == 0 {
+				position.Y -= dir.Y * moveSpeed
 			}
 		}
 		if rl.IsKeyDown(rl.KeyRight) {
-			oldDirX := dirX
-			dirX = dirX*math.Cos(-rotSpeed) - dirY*math.Sin(-rotSpeed)
-			dirY = oldDirX*math.Sin(-rotSpeed) + dirY*math.Cos(-rotSpeed)
-			oldPlaneX := planeX
-			planeX = planeX*math.Cos(-rotSpeed) - planeY*math.Sin(-rotSpeed)
-			planeY = oldPlaneX*math.Sin(-rotSpeed) + planeY*math.Cos(-rotSpeed)
+			oldDirX := dir.X
+			dir.X = dir.X*float32(math.Cos(float64(-rotSpeed))) - dir.Y*float32(math.Sin(float64(-rotSpeed)))
+			dir.Y = oldDirX*float32(math.Sin(float64(-rotSpeed))) + dir.Y*float32(math.Cos(float64(-rotSpeed)))
+			oldPlaneX := plane.X
+			plane.X = plane.X*float32(math.Cos(float64(-rotSpeed))) - plane.Y*float32(math.Sin(float64(-rotSpeed)))
+			plane.Y = oldPlaneX*float32(math.Sin(float64(-rotSpeed))) + plane.Y*float32(math.Cos(float64(-rotSpeed)))
 		}
 		if rl.IsKeyDown(rl.KeyLeft) {
-			oldDirX := dirX
-			dirX = dirX*math.Cos(rotSpeed) - dirY*math.Sin(rotSpeed)
-			dirY = oldDirX*math.Sin(rotSpeed) + dirY*math.Cos(rotSpeed)
-			oldPlaneX := planeX
-			planeX = planeX*math.Cos(rotSpeed) - planeY*math.Sin(rotSpeed)
-			planeY = oldPlaneX*math.Sin(rotSpeed) + planeY*math.Cos(rotSpeed)
+			oldDirX := dir.X
+			dir.X = dir.X*float32(math.Cos(float64(rotSpeed))) - dir.Y*float32(math.Sin(float64(rotSpeed)))
+			dir.Y = oldDirX*float32(math.Sin(float64(rotSpeed))) + dir.Y*float32(math.Cos(float64(rotSpeed)))
+			oldPlaneX := plane.X
+			plane.X = plane.X*float32(math.Cos(float64(rotSpeed))) - plane.Y*float32(math.Sin(float64(rotSpeed)))
+			plane.Y = oldPlaneX*float32(math.Sin(float64(rotSpeed))) + plane.Y*float32(math.Cos(float64(rotSpeed)))
 		}
 
 		rl.EndDrawing()
