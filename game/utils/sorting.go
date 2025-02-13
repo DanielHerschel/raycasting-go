@@ -10,6 +10,7 @@ func SortMap(data map[int]float32) PairList {
 		i++
 	}
 	sort.Sort(sort.Reverse(pl))
+	
 	return pl
 }
 

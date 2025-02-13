@@ -116,6 +116,7 @@ func main() {
 		walls.Draw(*camera)
 
 		// Draw Sprites
+		sprites = o.SortSprites(*camera, sprites)
 		for _, sprite := range sprites {
 			sprite.Draw(*camera)
 		}

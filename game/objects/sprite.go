@@ -1,6 +1,7 @@
 package objects
 
 import (
+	"fmt"
 	"math"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -66,9 +67,12 @@ func SortSprites(camera Camera, sprites []Sprite) (sorted []Sprite) {
 		spriteData[i] = ((camera.Position.X-sprites[i].Position.X)*(camera.Position.X-sprites[i].Position.X) + (camera.Position.Y-sprites[i].Position.Y)*(camera.Position.Y-sprites[i].Position.Y))
 	}
 
-	u.SortMap(spriteData)
+	pairList := u.SortMap(spriteData)
 
-	for index := range spriteData {
+	fmt.Println(pairList)
+
+	for i := 0; i < len(pairList); i++ {
+		index := pairList[i].Key
 		sorted = append(sorted, sprites[index])
 	}
 	return
