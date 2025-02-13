@@ -56,10 +56,26 @@ func getWalls() (wallsImages []*rl.Image, wallsTextures []rl.Texture2D) {
 	return
 }
 
+func getSprites() (sprites []o.Sprite) {
+	barrelTexture := rl.LoadTexture("assets/sprites/barrel.png")
+
+	sprites = append(sprites, o.NewSprite(o.NewTransform(rl.NewVector2(21.5, 1.5), rl.NewVector2(0.0, 0.0)), barrelTexture))  // barrel
+	sprites = append(sprites, o.NewSprite(o.NewTransform(rl.NewVector2(15.5, 1.5), rl.NewVector2(0.0, 0.0)), barrelTexture))  // barrel
+	sprites = append(sprites, o.NewSprite(o.NewTransform(rl.NewVector2(16.0, 1.8), rl.NewVector2(0.0, 0.0)), barrelTexture))  // barrel
+	sprites = append(sprites, o.NewSprite(o.NewTransform(rl.NewVector2(16.2, 1.2), rl.NewVector2(0.0, 0.0)), barrelTexture))  // barrel
+	sprites = append(sprites, o.NewSprite(o.NewTransform(rl.NewVector2(3.5, 2.5), rl.NewVector2(0.0, 0.0)), barrelTexture))   // barrel
+	sprites = append(sprites, o.NewSprite(o.NewTransform(rl.NewVector2(9.5, 15.5), rl.NewVector2(0.0, 0.0)), barrelTexture))  // barrel
+	sprites = append(sprites, o.NewSprite(o.NewTransform(rl.NewVector2(10.0, 15.1), rl.NewVector2(0.0, 0.0)), barrelTexture)) // barrel
+	sprites = append(sprites, o.NewSprite(o.NewTransform(rl.NewVector2(10.5, 15.8), rl.NewVector2(0.0, 0.0)), barrelTexture)) // barrel
+
+	return
+}
+
 func main() {
 	// Initialize window
 	rl.InitWindow(u.SCREEN_WIDTH, u.SCREEN_HEIGHT, "Raycaster")
 	rl.SetTargetFPS(u.FRAME_RATE)
+	rl.SetBlendMode(rl.BlendAlpha)
 
 	// Texture loading and initialization
 	wallsImages, wallTextures := getWalls()
@@ -83,6 +99,10 @@ func main() {
 		rl.NewVector2(0.0, 0.66),
 	)
 
+	// Sprites
+	sprites := getSprites()
+	defer o.UnloadSprites(sprites)
+
 	// Time and physics initialization
 	currentTime, oldTime := time.Now().UnixMilli(), int64(0)
 
@@ -91,8 +111,14 @@ func main() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
 
+		// Draw world
 		floorCeiling.Draw(*camera)
 		walls.Draw(*camera)
+
+		// Draw Sprites
+		for _, sprite := range sprites {
+			sprite.Draw(*camera)
+		}
 
 		// Timing for FPS counter
 		oldTime = currentTime

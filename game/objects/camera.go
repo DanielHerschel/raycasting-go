@@ -4,15 +4,17 @@ import (
 	"math"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
+	u "github.com/danielherschel/raylib-test/game/utils"
 )
 
 func NewCamera(transform Transform, plane rl.Vector2) *Camera {
-	return &Camera{Transform: transform, Plane: plane}
+	return &Camera{Transform: transform, Plane: plane, ZBuffer: make([]float32, u.SCREEN_WIDTH)}
 }
 
 type Camera struct {
 	Transform
 	Plane     rl.Vector2
+	ZBuffer  []float32
 }
 
 func (c *Camera) Update(frameTime float64, worldMap [][]int) {

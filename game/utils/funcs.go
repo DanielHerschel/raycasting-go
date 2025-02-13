@@ -1,6 +1,8 @@
 package utils
 
-import rl "github.com/gen2brain/raylib-go/raylib"
+import (
+	rl "github.com/gen2brain/raylib-go/raylib"
+)
 
 func UnloadTextures(textures []rl.Texture2D) {
 	for _, texture := range textures {
