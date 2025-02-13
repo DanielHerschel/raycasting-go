@@ -7,6 +7,8 @@ import (
 	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
+
+	o "github.com/danielherschel/raylib-test/game/objects"
 )
 
 const (
@@ -75,7 +77,11 @@ func unloadImages(images []*rl.Image) {
 	}
 }
 
-func castWalls(dir rl.Vector2, plane rl.Vector2, position rl.Vector2, worldMap [][]int, walls []rl.Texture2D) {
+func castWalls(camera o.Camera, worldMap [][]int, walls []rl.Texture2D) {
+	position := camera.Position
+	dir := camera.Direction
+	plane := camera.Plane
+	
 	for x := 0; x < SCREEN_WIDTH; x++ {
 		cameraX := 2*float32(x)/float32(SCREEN_WIDTH) - 1
 		rayDir := rl.NewVector2(dir.X+plane.X*cameraX, dir.Y+plane.Y*cameraX)
@@ -173,7 +179,11 @@ func castWalls(dir rl.Vector2, plane rl.Vector2, position rl.Vector2, worldMap [
 	}
 }
 
-func castCeiling(dir rl.Vector2, plane rl.Vector2, position rl.Vector2, floorTexture []color.RGBA, ceilingTexture []color.RGBA, pixels []color.RGBA, floorCeilTexture rl.Texture2D) {
+func castCeiling(camera o.Camera, floorTexture []color.RGBA, ceilingTexture []color.RGBA, pixels []color.RGBA, floorCeilTexture rl.Texture2D) {
+	position := camera.Position
+	dir := camera.Direction
+	plane := camera.Plane
+	
 	for y := 0; y < SCREEN_HEIGHT; y++ {
 		rayDir0 := rl.NewVector2(dir.X-plane.X, dir.Y-plane.Y)
 		rayDir1 := rl.NewVector2(dir.X+plane.X, dir.Y+plane.Y)
@@ -232,9 +242,10 @@ func main() {
 	ceilingTexture := rl.LoadImageColors(wallsImages[6])
 
 	// Camera settings
-	position := rl.NewVector2(22.0, 12.0)
-	dir := rl.NewVector2(-1.0, 0.0)
-	plane := rl.NewVector2(0.0, 0.66)
+	camera := o.NewCamera(
+		o.NewTransform(rl.NewVector2(22.0, 12.0), rl.NewVector2(-1.0, 0.0)),
+		rl.NewVector2(0.0, 0.66),
+	)
 
 	// Time and physics initialization
 	currentTime, oldTime := time.Now().UnixMilli(), int64(0)
@@ -244,8 +255,8 @@ func main() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
 
-		castCeiling(dir, plane, position, floorTexture, ceilingTexture, pixels, floorCeilTexture)
-		castWalls(dir, plane, position, worldMap, walls)
+		castCeiling(*camera, floorTexture, ceilingTexture, pixels, floorCeilTexture)
+		castWalls(*camera, worldMap, walls)
 
 		// Timing for FPS counter
 		oldTime = currentTime
@@ -253,41 +264,7 @@ func main() {
 		frameTime := (float64(currentTime) - float64(oldTime)) / 1000.0
 		rl.DrawText(fmt.Sprintf("FPS: %d", int(1.0/frameTime)), 10, 10, 30, rl.White)
 
-		moveSpeed := float32(frameTime * 3.0)
-		rotSpeed := float32(frameTime * 3.0)
-
-		if rl.IsKeyDown(rl.KeyUp) {
-			if worldMap[int(position.X+dir.X*moveSpeed)][int(position.Y)] == 0 {
-				position.X += dir.X * moveSpeed
-			}
-			if worldMap[int(position.X)][int(position.Y+dir.Y*moveSpeed)] == 0 {
-				position.Y += dir.Y * moveSpeed
-			}
-		}
-		if rl.IsKeyDown(rl.KeyDown) {
-			if worldMap[int(position.X-dir.X*moveSpeed)][int(position.Y)] == 0 {
-				position.X -= dir.X * moveSpeed
-			}
-			if worldMap[int(position.X)][int(position.Y-dir.Y*moveSpeed)] == 0 {
-				position.Y -= dir.Y * moveSpeed
-			}
-		}
-		if rl.IsKeyDown(rl.KeyRight) {
-			oldDirX := dir.X
-			dir.X = dir.X*float32(math.Cos(float64(-rotSpeed))) - dir.Y*float32(math.Sin(float64(-rotSpeed)))
-			dir.Y = oldDirX*float32(math.Sin(float64(-rotSpeed))) + dir.Y*float32(math.Cos(float64(-rotSpeed)))
-			oldPlaneX := plane.X
-			plane.X = plane.X*float32(math.Cos(float64(-rotSpeed))) - plane.Y*float32(math.Sin(float64(-rotSpeed)))
-			plane.Y = oldPlaneX*float32(math.Sin(float64(-rotSpeed))) + plane.Y*float32(math.Cos(float64(-rotSpeed)))
-		}
-		if rl.IsKeyDown(rl.KeyLeft) {
-			oldDirX := dir.X
-			dir.X = dir.X*float32(math.Cos(float64(rotSpeed))) - dir.Y*float32(math.Sin(float64(rotSpeed)))
-			dir.Y = oldDirX*float32(math.Sin(float64(rotSpeed))) + dir.Y*float32(math.Cos(float64(rotSpeed)))
-			oldPlaneX := plane.X
-			plane.X = plane.X*float32(math.Cos(float64(rotSpeed))) - plane.Y*float32(math.Sin(float64(rotSpeed)))
-			plane.Y = oldPlaneX*float32(math.Sin(float64(rotSpeed))) + plane.Y*float32(math.Cos(float64(rotSpeed)))
-		}
+		camera.Update(frameTime, worldMap)
 
 		rl.EndDrawing()
 	}
