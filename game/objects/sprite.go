@@ -1,7 +1,6 @@
 package objects
 
 import (
-	"fmt"
 	"math"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
