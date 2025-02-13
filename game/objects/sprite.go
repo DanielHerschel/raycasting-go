@@ -69,8 +69,6 @@ func SortSprites(camera Camera, sprites []Sprite) (sorted []Sprite) {
 
 	pairList := u.SortMap(spriteData)
 
-	fmt.Println(pairList)
-
 	for i := 0; i < len(pairList); i++ {
 		index := pairList[i].Key
 		sorted = append(sorted, sprites[index])
