@@ -3,7 +3,7 @@ package main
 import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 
-	o "github.com/danielherschel/raylib-test/game/objects"
+	p "github.com/danielherschel/raylib-test/game/prefabs"
 	u "github.com/danielherschel/raylib-test/game/utils"
 )
 
@@ -13,7 +13,7 @@ func main() {
 	rl.SetTargetFPS(u.FRAME_RATE)
 	rl.SetBlendMode(rl.BlendAlpha)
 
-	level := o.NewLevel()
+	level := p.NewLevel()
 	defer level.Close()
 
 	// Main loop

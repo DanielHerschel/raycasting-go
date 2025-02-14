@@ -1,9 +1,10 @@
-package objects
+package prefabs
 
 import (
 	"math"
 
 	u "github.com/danielherschel/raylib-test/game/utils"
+	o "github.com/danielherschel/raylib-test/game/objects"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -16,7 +17,7 @@ type Walls struct {
 	wallTextures []rl.Texture2D
 }
 
-func (w Walls) Draw(camera Camera) {
+func (w Walls) Draw(camera o.Camera) {
 	position := camera.Position
 	dir := camera.Direction
 	plane := camera.Plane

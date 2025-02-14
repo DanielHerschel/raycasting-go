@@ -1,4 +1,4 @@
-package objects
+package prefabs
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 
+	o "github.com/danielherschel/raylib-test/game/objects"
 	u "github.com/danielherschel/raylib-test/game/utils"
 )
 
@@ -57,22 +58,19 @@ func getWalls() (wallsImages []*rl.Image, wallsTextures []rl.Texture2D) {
 	return
 }
 
-func getSprites() (sprites []Sprite) {
-	barrelTexture := rl.LoadTexture("assets/sprites/barrel.png")
-	pillarTexture := rl.LoadTexture("assets/sprites/pillar.png")
+func getSprites() (sprites []o.ISprite) {
+	sprites = append(sprites, NewBarrel(21.5, 1.5))  // barrel
+	sprites = append(sprites, NewBarrel(15.5, 1.5))  // barrel
+	sprites = append(sprites, NewBarrel(16.0, 1.8))  // barrel
+	sprites = append(sprites, NewBarrel(16.2, 1.2))  // barrel
+	sprites = append(sprites, NewBarrel(3.5, 2.5))   // barrel
+	sprites = append(sprites, NewBarrel(9.5, 15.5))  // barrel
+	sprites = append(sprites, NewBarrel(10.0, 15.1)) // barrel
+	sprites = append(sprites, NewBarrel(10.5, 15.8)) // barrel
 
-	sprites = append(sprites, NewSprite(NewTransform(rl.NewVector2(21.5, 1.5), rl.NewVector2(0.0, 0.0)), barrelTexture))  // barrel
-	sprites = append(sprites, NewSprite(NewTransform(rl.NewVector2(15.5, 1.5), rl.NewVector2(0.0, 0.0)), barrelTexture))  // barrel
-	sprites = append(sprites, NewSprite(NewTransform(rl.NewVector2(16.0, 1.8), rl.NewVector2(0.0, 0.0)), barrelTexture))  // barrel
-	sprites = append(sprites, NewSprite(NewTransform(rl.NewVector2(16.2, 1.2), rl.NewVector2(0.0, 0.0)), barrelTexture))  // barrel
-	sprites = append(sprites, NewSprite(NewTransform(rl.NewVector2(3.5, 2.5), rl.NewVector2(0.0, 0.0)), barrelTexture))   // barrel
-	sprites = append(sprites, NewSprite(NewTransform(rl.NewVector2(9.5, 15.5), rl.NewVector2(0.0, 0.0)), barrelTexture))  // barrel
-	sprites = append(sprites, NewSprite(NewTransform(rl.NewVector2(10.0, 15.1), rl.NewVector2(0.0, 0.0)), barrelTexture)) // barrel
-	sprites = append(sprites, NewSprite(NewTransform(rl.NewVector2(10.5, 15.8), rl.NewVector2(0.0, 0.0)), barrelTexture)) // barrel
-
-	sprites = append(sprites, NewSprite(NewTransform(rl.NewVector2(18.5, 10.5), rl.NewVector2(0.0, 0.0)), pillarTexture)) // pillar
-	sprites = append(sprites, NewSprite(NewTransform(rl.NewVector2(18.5, 11.5), rl.NewVector2(0.0, 0.0)), pillarTexture)) // pillar
-	sprites = append(sprites, NewSprite(NewTransform(rl.NewVector2(18.5, 12.5), rl.NewVector2(0.0, 0.0)), pillarTexture)) // pillar
+	sprites = append(sprites, NewPillar(18.5, 10.5)) // pillar
+	sprites = append(sprites, NewPillar(18.5, 11.5)) // pillar
+	sprites = append(sprites, NewPillar(18.5, 12.5)) // pillar
 
 	return
 }
@@ -95,8 +93,8 @@ func NewLevel() *Level {
 	floorCeiling := NewFloorCeiling(floorTexture, ceilingTexture)
 
 	// Camera settings
-	camera := NewCamera(
-		NewTransform(rl.NewVector2(22.0, 12.0), rl.NewVector2(-1.0, 0.0)),
+	camera := o.NewCamera(
+		o.NewTransform(rl.NewVector2(22.0, 12.0), rl.NewVector2(-1.0, 0.0)),
 		rl.NewVector2(0.0, 0.66),
 	)
 
@@ -121,9 +119,9 @@ type Level struct {
 	WorldMap     [][]int
 	Walls        Walls
 	FloorCeiling FloorCeiling
-	Sprites      []Sprite
+	Sprites      []o.ISprite
 
-	Camera *Camera
+	Camera *o.Camera
 
 	// Time and physics
 	currentTime int64
@@ -148,21 +146,20 @@ func (l *Level) MainLoop() {
 }
 
 func (l *Level) drawSprites() {
-	l.Sprites = SortSprites(*l.Camera, l.Sprites)
+	l.Sprites = o.SortSprites(*l.Camera, l.Sprites)
 	for _, sprite := range l.Sprites {
 		sprite.Draw(*l.Camera)
 	}
 }
 
-
 func (l *Level) getFrameTime() float64 {
 	l.oldTime = l.currentTime
 	l.currentTime = time.Now().UnixMilli()
-	return float64(l.currentTime - l.oldTime) / 1000.0
+	return float64(l.currentTime-l.oldTime) / 1000.0
 }
 
 func (l *Level) Close() {
 	l.Walls.Close()
 	l.FloorCeiling.Close()
-	UnloadSprites(l.Sprites)
+	o.UnloadSprites(l.Sprites)
 }

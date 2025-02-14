@@ -8,6 +8,13 @@ import (
 	u "github.com/danielherschel/raylib-test/game/utils"
 )
 
+type ISprite interface {
+	Draw(camera Camera)
+	Close()
+	GetTransform() Transform
+	GetTexture() rl.Texture2D
+}
+
 func NewSprite(transform Transform, texture rl.Texture2D) Sprite {
 	return Sprite{Transform: transform, Texture: texture}
 }
@@ -60,10 +67,18 @@ func (s Sprite) Close() {
 	rl.UnloadTexture(s.Texture)
 }
 
-func SortSprites(camera Camera, sprites []Sprite) (sorted []Sprite) {
+func (s Sprite) GetTransform() Transform {
+	return s.Transform
+}
+
+func (s Sprite) GetTexture() rl.Texture2D {
+	return s.Texture
+}
+
+func SortSprites(camera Camera, sprites []ISprite) (sorted []ISprite) {
 	spriteData := make(map[int]float32, len(sprites))
 	for i := 0; i < len(sprites); i++ {
-		spriteData[i] = ((camera.Position.X-sprites[i].Position.X)*(camera.Position.X-sprites[i].Position.X) + (camera.Position.Y-sprites[i].Position.Y)*(camera.Position.Y-sprites[i].Position.Y))
+		spriteData[i] = ((camera.Position.X-sprites[i].GetTransform().Position.X)*(camera.Position.X-sprites[i].GetTransform().Position.X) + (camera.Position.Y-sprites[i].GetTransform().Position.Y)*(camera.Position.Y-sprites[i].GetTransform().Position.Y))
 	}
 
 	pairList := u.SortMap(spriteData)
@@ -75,7 +90,7 @@ func SortSprites(camera Camera, sprites []Sprite) (sorted []Sprite) {
 	return
 }
 
-func UnloadSprites(sprites []Sprite) {
+func UnloadSprites(sprites []ISprite) {
 	for _, sprite := range sprites {
 		sprite.Close()
 	}
