@@ -96,13 +96,7 @@ func (w Walls) Draw(camera Camera) {
 		lineHeight := int(u.SCREEN_HEIGHT / prepWallDist)
 
 		drawStart := int(-float64(lineHeight)/2 + u.SCREEN_HEIGHT/2)
-		// if drawStart < 0 {
-		// 	drawStart = 0
-		// }
 		drawEnd := int(float64(lineHeight)/2 + u.SCREEN_HEIGHT/2)
-		// if drawEnd >= SCREEN_HEIGHT {
-		// 	drawEnd = SCREEN_HEIGHT
-		// }
 
 		wallType := w.worldMap[mapX][mapY] - 1
 		texturePos := float32(wallX * u.TEXTURE_WIDTH)
@@ -115,6 +109,9 @@ func (w Walls) Draw(camera Camera) {
 			0.0,
 			rl.Gray,
 		)
+
+		// Save wall distance in this camera x position in the buffer
+		camera.ZBuffer[x] = prepWallDist
 	}
 }
 
