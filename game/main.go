@@ -13,7 +13,7 @@ func main() {
 	rl.SetTargetFPS(u.FRAME_RATE)
 	rl.SetBlendMode(rl.BlendAlpha)
 
-	level := p.NewLevel()
+	level := p.NewLevel(u.LEVEL_1_PATH)
 	defer level.Close()
 
 	// Main loop

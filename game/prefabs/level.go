@@ -1,7 +1,9 @@
 package prefabs
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -11,33 +13,87 @@ import (
 )
 
 // Hard coded level data, will be moved to a file later
+type LevelData struct {
+	Id          int
+	Name        string
+	WorldMap    [][]int
+	Player      o.Transform
+	GameObjects []o.IGameObject
+}
 
-func getWorldMap() [][]int {
-	return [][]int{
-		{8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 4, 4, 6, 4, 4, 6, 4, 6, 4, 4, 4, 6, 4},
-		{8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4},
-		{8, 0, 3, 3, 0, 0, 0, 0, 0, 8, 8, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6},
-		{8, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6},
-		{8, 0, 3, 3, 0, 0, 0, 0, 0, 8, 8, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4},
-		{8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 4, 0, 0, 0, 0, 0, 6, 6, 6, 0, 6, 4, 6},
-		{8, 8, 8, 8, 0, 8, 8, 8, 8, 8, 8, 4, 4, 4, 4, 4, 4, 6, 0, 0, 0, 0, 0, 6},
-		{7, 7, 7, 7, 0, 7, 7, 7, 7, 0, 8, 0, 8, 0, 8, 0, 8, 4, 0, 4, 0, 6, 0, 6},
-		{7, 7, 0, 0, 0, 0, 0, 0, 7, 8, 0, 8, 0, 8, 0, 8, 8, 6, 0, 0, 0, 0, 0, 6},
-		{7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 6, 0, 0, 0, 0, 0, 4},
-		{7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 6, 0, 6, 0, 6, 0, 6},
-		{7, 7, 0, 0, 0, 0, 0, 0, 7, 8, 0, 8, 0, 8, 0, 8, 8, 6, 4, 6, 0, 6, 6, 6},
-		{7, 7, 7, 7, 0, 7, 7, 7, 7, 8, 8, 4, 0, 6, 8, 4, 8, 3, 3, 3, 0, 3, 3, 3},
-		{2, 2, 2, 2, 0, 2, 2, 2, 2, 4, 6, 4, 0, 0, 6, 0, 6, 3, 0, 0, 0, 0, 0, 3},
-		{2, 2, 0, 0, 0, 0, 0, 2, 2, 4, 0, 0, 0, 0, 0, 0, 4, 3, 0, 0, 0, 0, 0, 3},
-		{2, 0, 0, 0, 0, 0, 0, 0, 2, 4, 0, 0, 0, 0, 0, 0, 4, 3, 0, 0, 0, 0, 0, 3},
-		{1, 0, 0, 0, 0, 0, 0, 0, 1, 4, 4, 4, 4, 4, 6, 0, 6, 3, 3, 0, 0, 0, 3, 3},
-		{2, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 1, 2, 2, 2, 6, 6, 0, 0, 5, 0, 5, 0, 5},
-		{2, 2, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 2, 2, 0, 5, 0, 5, 0, 0, 0, 5, 5},
-		{2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 5, 0, 5, 0, 5, 0, 5, 0, 5},
-		{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5},
-		{2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 5, 0, 5, 0, 5, 0, 5, 0, 5},
-		{2, 2, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 2, 2, 0, 5, 0, 5, 0, 0, 0, 5, 5},
-		{2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5},
+func loadLevelDataFromFile(path string) LevelData {
+	// Open the file
+	levelFile, err := os.Open(path)
+	defer levelFile.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	fileInfo, err := levelFile.Stat()
+	if err != nil {
+		panic(err)
+	}
+
+	fileSize := fileInfo.Size()
+	fileData := make([]byte, fileSize)
+	_, err = levelFile.Read(fileData)
+	if err != nil {
+		panic(err)
+	}
+
+	// Parse the JSON data
+	var levelData map[string]interface{}
+	err = json.Unmarshal(fileData, &levelData)
+	if err != nil {
+		panic(err)
+	}
+
+	// Extract the level data
+	id := int(levelData["id"].(float64))
+	name := levelData["name"].(string)
+
+	// Extract world map data
+	worldMapData := levelData["worldMap"].([]interface{})
+	var worldMap [][]int
+	for _, row := range worldMapData {
+		row := row.([]interface{})
+		var intRow []int
+		for _, cell := range row {
+			intRow = append(intRow, int(cell.(float64)))
+		}
+		worldMap = append(worldMap, intRow)
+	}
+
+	// Extract player data
+	playerData := levelData["player"].(map[string]interface{})
+	playerPosition := playerData["position"].([]interface{})
+	playerDirection := playerData["direction"].([]interface{})
+	player := o.Transform{
+		Position:  rl.NewVector2(float32(playerPosition[0].(float64)), float32(playerPosition[1].(float64))),
+		Direction: rl.NewVector2(float32(playerDirection[0].(float64)), float32(playerDirection[1].(float64))),
+	}
+
+	// Extract game objects data
+	gameObjectsData := levelData["gameObjects"].([]interface{})
+	var gameObjects []o.IGameObject
+	for _, gameObjectData := range gameObjectsData {
+		gameObject := gameObjectData.(map[string]interface{})
+		objectPosition := gameObject["position"].([]interface{})
+
+		switch gameObject["type"].(string) {
+		case "barrel":
+			gameObjects = append(gameObjects, NewBarrel(float32(objectPosition[0].(float64)), float32(objectPosition[1].(float64))))
+		case "pillar":
+			gameObjects = append(gameObjects, NewPillar(float32(objectPosition[0].(float64)), float32(objectPosition[1].(float64))))
+		}
+	}
+
+	return LevelData{
+		Id:          id,
+		Name:        name,
+		WorldMap:    worldMap,
+		Player:      player,
+		GameObjects: gameObjects,
 	}
 }
 
@@ -58,26 +114,12 @@ func getWalls() (wallsImages []*rl.Image, wallsTextures []rl.Texture2D) {
 	return
 }
 
-func getSprites() (sprites []o.IGameObject) {
-	sprites = append(sprites, NewBarrel(21.5, 1.5))  // barrel
-	sprites = append(sprites, NewBarrel(15.5, 1.5))  // barrel
-	sprites = append(sprites, NewBarrel(16.0, 1.8))  // barrel
-	sprites = append(sprites, NewBarrel(16.2, 1.2))  // barrel
-	sprites = append(sprites, NewBarrel(3.5, 2.5))   // barrel
-	sprites = append(sprites, NewBarrel(9.5, 15.5))  // barrel
-	sprites = append(sprites, NewBarrel(10.0, 15.1)) // barrel
-	sprites = append(sprites, NewBarrel(10.5, 15.8)) // barrel
-
-	sprites = append(sprites, NewPillar(18.5, 10.5)) // pillar
-	sprites = append(sprites, NewPillar(18.5, 11.5)) // pillar
-	sprites = append(sprites, NewPillar(18.5, 12.5)) // pillar
-
-	return
-}
-
 // Level struct
 
-func NewLevel() *Level {
+func NewLevel(levelPath string) *Level {
+	levelData := loadLevelDataFromFile(levelPath)
+	fmt.Print(levelData)
+
 	// Texture loading and initialization
 	wallsImages, wallTextures := getWalls()
 
@@ -86,7 +128,7 @@ func NewLevel() *Level {
 	u.UnloadImages(wallsImages)
 
 	// Load map data
-	worldMap := getWorldMap()
+	worldMap := levelData.WorldMap
 
 	walls := NewWalls(worldMap, wallTextures)
 
@@ -94,12 +136,12 @@ func NewLevel() *Level {
 
 	// Camera settings
 	camera := o.NewCamera(
-		o.NewTransform(rl.NewVector2(22.0, 12.0), rl.NewVector2(-1.0, 0.0)),
+		levelData.Player,
 		rl.NewVector2(0.0, 0.66),
 	)
 
-	// Sprites
-	sprites := getSprites()
+	// Load Game Objects
+	gameObjects := levelData.GameObjects
 
 	// Time and physics iunitialization
 	currentTime, oldTime := time.Now().UnixMilli(), int64(0)
@@ -108,7 +150,7 @@ func NewLevel() *Level {
 		WorldMap:     worldMap,
 		Walls:        walls,
 		FloorCeiling: floorCeiling,
-		Sprites:      sprites,
+		GameObjects:  gameObjects,
 		Camera:       camera,
 		currentTime:  currentTime,
 		oldTime:      oldTime,
@@ -119,7 +161,7 @@ type Level struct {
 	WorldMap     [][]int
 	Walls        Walls
 	FloorCeiling FloorCeiling
-	Sprites      []o.IGameObject
+	GameObjects  []o.IGameObject
 
 	Camera *o.Camera
 
@@ -146,8 +188,8 @@ func (l *Level) MainLoop() {
 }
 
 func (l *Level) drawSprites() {
-	l.Sprites = o.SortGameObjectsByDistanceToCamera(*l.Camera, l.Sprites)
-	for _, sprite := range l.Sprites {
+	l.GameObjects = o.SortGameObjectsByDistanceToCamera(*l.Camera, l.GameObjects)
+	for _, sprite := range l.GameObjects {
 		sprite.GetSprite().Draw(*l.Camera)
 	}
 }
@@ -161,5 +203,5 @@ func (l *Level) getFrameTime() float64 {
 func (l *Level) Close() {
 	l.Walls.Close()
 	l.FloorCeiling.Close()
-	o.UnloadGameObjects(l.Sprites)
+	o.UnloadGameObjects(l.GameObjects)
 }
