@@ -12,7 +12,7 @@ import (
 	u "github.com/danielherschel/raylib-test/game/utils"
 )
 
-// Hard coded level data, will be moved to a file later
+// Level data from file
 type LevelData struct {
 	Id          int
 	Name        string
@@ -97,12 +97,9 @@ func loadLevelDataFromFile(path string) LevelData {
 	}
 }
 
-
-
 // Level struct
-
-func NewLevel(levelPath string) *Level {
-	levelData := loadLevelDataFromFile(levelPath)
+func NewLevel(levelFilePath string) *Level {
+	levelData := loadLevelDataFromFile(levelFilePath)
 	fmt.Print(levelData)
 
 	// Load map data
@@ -110,13 +107,12 @@ func NewLevel(levelPath string) *Level {
 
 	walls := NewWalls(worldMap)
 
-	floorImage, ceilingImage := rl.LoadImage("assets/textures/stonebricks.png"), rl.LoadImage("assets/textures/wood.png")
+	floorImage, ceilingImage := rl.LoadImage(u.TEXTURE_STONE_BRICKS), rl.LoadImage(u.TEXTURE_WOOD)
 	floorTexture := rl.LoadImageColors(floorImage)
 	ceilingTexture := rl.LoadImageColors(ceilingImage)
 	u.UnloadImages(floorImage, ceilingImage)
 
 	floorCeiling := NewFloorCeiling(floorTexture, ceilingTexture)
-	
 
 	// Camera settings
 	camera := o.NewCamera(
@@ -161,7 +157,7 @@ func (l *Level) MainLoop() {
 	l.Walls.Draw(*l.Camera)
 
 	// Draw Sprites
-	l.drawSprites()
+	l.drawGameObject()
 
 	// Timing for FPS counter
 	l.frameTime = l.getFrameTime()
@@ -171,7 +167,7 @@ func (l *Level) MainLoop() {
 	l.Camera.Update(l.frameTime, l.WorldMap)
 }
 
-func (l *Level) drawSprites() {
+func (l *Level) drawGameObject() {
 	l.GameObjects = o.SortGameObjectsByDistanceToCamera(*l.Camera, l.GameObjects)
 	for _, sprite := range l.GameObjects {
 		sprite.GetSprite().Draw(*l.Camera)

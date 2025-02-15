@@ -3,20 +3,20 @@ package prefabs
 import (
 	"math"
 
-	u "github.com/danielherschel/raylib-test/game/utils"
 	o "github.com/danielherschel/raylib-test/game/objects"
+	u "github.com/danielherschel/raylib-test/game/utils"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 func getWalls() (wallsTextures []rl.Texture2D) {
-	wallsTextures = append(wallsTextures, rl.LoadTexture("assets/textures/banner.png"))
-	wallsTextures = append(wallsTextures, rl.LoadTexture("assets/textures/redbricks.png"))
-	wallsTextures = append(wallsTextures, rl.LoadTexture("assets/textures/purplemeat.png"))
-	wallsTextures = append(wallsTextures, rl.LoadTexture("assets/textures/stonebricks.png"))
-	wallsTextures = append(wallsTextures, rl.LoadTexture("assets/textures/bluebricks.png"))
-	wallsTextures = append(wallsTextures, rl.LoadTexture("assets/textures/mossbricks.png"))
-	wallsTextures = append(wallsTextures, rl.LoadTexture("assets/textures/wood.png"))
-	wallsTextures = append(wallsTextures, rl.LoadTexture("assets/textures/bricks.png"))
+	wallsTextures = append(wallsTextures, rl.LoadTexture(u.TEXTURE_BANNER))
+	wallsTextures = append(wallsTextures, rl.LoadTexture(u.TEXTURE_RED_BRICKS))
+	wallsTextures = append(wallsTextures, rl.LoadTexture(u.TEXTURE_PURPLE_MEAT))
+	wallsTextures = append(wallsTextures, rl.LoadTexture(u.TEXTURE_STONE_BRICKS))
+	wallsTextures = append(wallsTextures, rl.LoadTexture(u.TEXTURE_BLUE_BLICK))
+	wallsTextures = append(wallsTextures, rl.LoadTexture(u.TEXTURE_MOSS_BRICKS))
+	wallsTextures = append(wallsTextures, rl.LoadTexture(u.TEXTURE_WOOD))
+	wallsTextures = append(wallsTextures, rl.LoadTexture(u.TEXTURE_BRICKS))
 	return
 }
 
@@ -33,7 +33,7 @@ func (w Walls) Draw(camera o.Camera) {
 	position := camera.Position
 	dir := camera.Direction
 	plane := camera.Plane
-	
+
 	for x := 0; x < u.SCREEN_WIDTH; x++ {
 		cameraX := 2*float32(x)/float32(u.SCREEN_WIDTH) - 1
 		rayDir := rl.NewVector2(dir.X+plane.X*cameraX, dir.Y+plane.Y*cameraX)
