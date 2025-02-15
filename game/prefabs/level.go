@@ -97,22 +97,7 @@ func loadLevelDataFromFile(path string) LevelData {
 	}
 }
 
-func getWalls() (wallsImages []*rl.Image, wallsTextures []rl.Texture2D) {
-	wallsImages = append(wallsImages, rl.LoadImage("assets/textures/banner.png"))
-	wallsImages = append(wallsImages, rl.LoadImage("assets/textures/redbricks.png"))
-	wallsImages = append(wallsImages, rl.LoadImage("assets/textures/purplemeat.png"))
-	wallsImages = append(wallsImages, rl.LoadImage("assets/textures/stonebricks.png"))
-	wallsImages = append(wallsImages, rl.LoadImage("assets/textures/bluebricks.png"))
-	wallsImages = append(wallsImages, rl.LoadImage("assets/textures/mossbricks.png"))
-	wallsImages = append(wallsImages, rl.LoadImage("assets/textures/wood.png"))
-	wallsImages = append(wallsImages, rl.LoadImage("assets/textures/bricks.png"))
 
-	for _, image := range wallsImages {
-		wallsTextures = append(wallsTextures, rl.LoadTextureFromImage(image))
-	}
-
-	return
-}
 
 // Level struct
 
@@ -120,19 +105,18 @@ func NewLevel(levelPath string) *Level {
 	levelData := loadLevelDataFromFile(levelPath)
 	fmt.Print(levelData)
 
-	// Texture loading and initialization
-	wallsImages, wallTextures := getWalls()
-
-	floorTexture := rl.LoadImageColors(wallsImages[3])
-	ceilingTexture := rl.LoadImageColors(wallsImages[6])
-	u.UnloadImages(wallsImages)
-
 	// Load map data
 	worldMap := levelData.WorldMap
 
-	walls := NewWalls(worldMap, wallTextures)
+	walls := NewWalls(worldMap)
+
+	floorImage, ceilingImage := rl.LoadImage("assets/textures/stonebricks.png"), rl.LoadImage("assets/textures/wood.png")
+	floorTexture := rl.LoadImageColors(floorImage)
+	ceilingTexture := rl.LoadImageColors(ceilingImage)
+	u.UnloadImages(floorImage, ceilingImage)
 
 	floorCeiling := NewFloorCeiling(floorTexture, ceilingTexture)
+	
 
 	// Camera settings
 	camera := o.NewCamera(

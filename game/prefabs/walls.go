@@ -8,8 +8,20 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func NewWalls(worldMap [][]int, wallTextures []rl.Texture2D) Walls {
-	return Walls{worldMap: worldMap, wallTextures: wallTextures}
+func getWalls() (wallsTextures []rl.Texture2D) {
+	wallsTextures = append(wallsTextures, rl.LoadTexture("assets/textures/banner.png"))
+	wallsTextures = append(wallsTextures, rl.LoadTexture("assets/textures/redbricks.png"))
+	wallsTextures = append(wallsTextures, rl.LoadTexture("assets/textures/purplemeat.png"))
+	wallsTextures = append(wallsTextures, rl.LoadTexture("assets/textures/stonebricks.png"))
+	wallsTextures = append(wallsTextures, rl.LoadTexture("assets/textures/bluebricks.png"))
+	wallsTextures = append(wallsTextures, rl.LoadTexture("assets/textures/mossbricks.png"))
+	wallsTextures = append(wallsTextures, rl.LoadTexture("assets/textures/wood.png"))
+	wallsTextures = append(wallsTextures, rl.LoadTexture("assets/textures/bricks.png"))
+	return
+}
+
+func NewWalls(worldMap [][]int) Walls {
+	return Walls{worldMap: worldMap, wallTextures: getWalls()}
 }
 
 type Walls struct {
@@ -117,5 +129,5 @@ func (w Walls) Draw(camera o.Camera) {
 }
 
 func (w Walls) Close() {
-	u.UnloadTextures(w.wallTextures)
+	u.UnloadTextures(w.wallTextures...)
 }
