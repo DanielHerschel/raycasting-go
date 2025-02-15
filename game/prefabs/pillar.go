@@ -19,3 +19,11 @@ func NewPillar(x, y float32) Pillar {
 type Pillar struct {
 	o.Sprite
 }
+
+func (p Pillar) GetSprite() o.Sprite {
+	return p.Sprite
+}
+
+func (p Pillar) Close() {
+	p.Sprite.Close()
+}

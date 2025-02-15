@@ -19,3 +19,11 @@ func NewBarrel(x, y float32) Barrel {
 type Barrel struct {
 	o.Sprite
 }
+
+func (b Barrel) GetSprite() o.Sprite {
+	return b.Sprite
+}
+
+func (b Barrel) Close() {
+	b.Sprite.Close()
+}

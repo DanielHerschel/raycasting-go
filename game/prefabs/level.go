@@ -58,7 +58,7 @@ func getWalls() (wallsImages []*rl.Image, wallsTextures []rl.Texture2D) {
 	return
 }
 
-func getSprites() (sprites []o.ISprite) {
+func getSprites() (sprites []o.IGameObject) {
 	sprites = append(sprites, NewBarrel(21.5, 1.5))  // barrel
 	sprites = append(sprites, NewBarrel(15.5, 1.5))  // barrel
 	sprites = append(sprites, NewBarrel(16.0, 1.8))  // barrel
@@ -119,7 +119,7 @@ type Level struct {
 	WorldMap     [][]int
 	Walls        Walls
 	FloorCeiling FloorCeiling
-	Sprites      []o.ISprite
+	Sprites      []o.IGameObject
 
 	Camera *o.Camera
 
@@ -146,9 +146,9 @@ func (l *Level) MainLoop() {
 }
 
 func (l *Level) drawSprites() {
-	l.Sprites = o.SortSprites(*l.Camera, l.Sprites)
+	l.Sprites = o.SortGameObjectsByDistanceToCamera(*l.Camera, l.Sprites)
 	for _, sprite := range l.Sprites {
-		sprite.Draw(*l.Camera)
+		sprite.GetSprite().Draw(*l.Camera)
 	}
 }
 
@@ -161,5 +161,5 @@ func (l *Level) getFrameTime() float64 {
 func (l *Level) Close() {
 	l.Walls.Close()
 	l.FloorCeiling.Close()
-	o.UnloadSprites(l.Sprites)
+	o.UnloadGameObjects(l.Sprites)
 }
