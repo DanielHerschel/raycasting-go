@@ -59,24 +59,3 @@ func (s Sprite) Draw(camera Camera) {
 func (s Sprite) Close() {
 	rl.UnloadTexture(s.Texture)
 }
-
-func SortSprites(camera Camera, sprites []Sprite) (sorted []Sprite) {
-	spriteData := make(map[int]float32, len(sprites))
-	for i := 0; i < len(sprites); i++ {
-		spriteData[i] = ((camera.Position.X-sprites[i].Position.X)*(camera.Position.X-sprites[i].Position.X) + (camera.Position.Y-sprites[i].Position.Y)*(camera.Position.Y-sprites[i].Position.Y))
-	}
-
-	pairList := u.SortMap(spriteData)
-
-	for i := 0; i < len(pairList); i++ {
-		index := pairList[i].Key
-		sorted = append(sorted, sprites[index])
-	}
-	return
-}
-
-func UnloadSprites(sprites []Sprite) {
-	for _, sprite := range sprites {
-		sprite.Close()
-	}
-}

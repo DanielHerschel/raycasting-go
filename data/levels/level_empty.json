@@ -1,0 +1,12 @@
+{
+    "id": 0,
+    "name": "",
+    "worldMap": [],
+    "player": {
+        "position": [0.0, 0.0],
+        "direction": [0.0, 0.0]
+    },
+    "gameObjects": [
+        {"type": "none", "position": [0.0, 0.0]}
+    ]
+}

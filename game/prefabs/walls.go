@@ -1,14 +1,27 @@
-package objects
+package prefabs
 
 import (
 	"math"
 
+	o "github.com/danielherschel/raylib-test/game/objects"
 	u "github.com/danielherschel/raylib-test/game/utils"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func NewWalls(worldMap [][]int, wallTextures []rl.Texture2D) Walls {
-	return Walls{worldMap: worldMap, wallTextures: wallTextures}
+func getWalls() (wallsTextures []rl.Texture2D) {
+	wallsTextures = append(wallsTextures, rl.LoadTexture(u.TEXTURE_BANNER))
+	wallsTextures = append(wallsTextures, rl.LoadTexture(u.TEXTURE_RED_BRICKS))
+	wallsTextures = append(wallsTextures, rl.LoadTexture(u.TEXTURE_PURPLE_MEAT))
+	wallsTextures = append(wallsTextures, rl.LoadTexture(u.TEXTURE_STONE_BRICKS))
+	wallsTextures = append(wallsTextures, rl.LoadTexture(u.TEXTURE_BLUE_BLICK))
+	wallsTextures = append(wallsTextures, rl.LoadTexture(u.TEXTURE_MOSS_BRICKS))
+	wallsTextures = append(wallsTextures, rl.LoadTexture(u.TEXTURE_WOOD))
+	wallsTextures = append(wallsTextures, rl.LoadTexture(u.TEXTURE_BRICKS))
+	return
+}
+
+func NewWalls(worldMap [][]int) Walls {
+	return Walls{worldMap: worldMap, wallTextures: getWalls()}
 }
 
 type Walls struct {
@@ -16,11 +29,11 @@ type Walls struct {
 	wallTextures []rl.Texture2D
 }
 
-func (w Walls) Draw(camera Camera) {
+func (w Walls) Draw(camera o.Camera) {
 	position := camera.Position
 	dir := camera.Direction
 	plane := camera.Plane
-	
+
 	for x := 0; x < u.SCREEN_WIDTH; x++ {
 		cameraX := 2*float32(x)/float32(u.SCREEN_WIDTH) - 1
 		rayDir := rl.NewVector2(dir.X+plane.X*cameraX, dir.Y+plane.Y*cameraX)
@@ -116,5 +129,5 @@ func (w Walls) Draw(camera Camera) {
 }
 
 func (w Walls) Close() {
-	u.UnloadTextures(w.wallTextures)
+	u.UnloadTextures(w.wallTextures...)
 }

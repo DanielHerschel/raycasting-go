@@ -1,4 +1,4 @@
-package objects
+package prefabs
 
 import (
 	"image/color"
@@ -6,6 +6,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 
 	u "github.com/danielherschel/raylib-test/game/utils"
+	o "github.com/danielherschel/raylib-test/game/objects"
 )
 
 func NewFloorCeiling(floorTexture []color.RGBA, ceilingTexture []color.RGBA) FloorCeiling {
@@ -30,7 +31,7 @@ type FloorCeiling struct {
 	floorCeilTexture rl.Texture2D
 }
 
-func (f FloorCeiling) Draw(camera Camera) {
+func (f FloorCeiling) Draw(camera o.Camera) {
 	position := camera.Position
 	dir := camera.Direction
 	plane := camera.Plane
