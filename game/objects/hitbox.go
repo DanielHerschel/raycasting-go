@@ -8,6 +8,11 @@ import (
 
 type IHittable interface {
 	GetHitBox() HitBox
+	OnHit()
+}
+
+type IDestroyable interface {
+	ShouldDestroy() bool
 }
 
 func NewHitBox(x, y, size float32) HitBox {

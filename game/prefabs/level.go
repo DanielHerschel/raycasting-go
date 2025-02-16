@@ -141,7 +141,7 @@ type Level struct {
 	WorldMap     [][]int
 	Walls        Walls
 	FloorCeiling FloorCeiling
-	GameObjects  []o.IGameObject
+	GameObjects  o.GameObjects
 
 	Camera *o.Camera
 
@@ -157,28 +157,54 @@ func (l *Level) MainLoop() {
 	l.Walls.Draw(*l.Camera)
 
 	// Draw Sprites
-	l.drawGameObject()
+	l.updateGameObjects()
 
 	// Timing for FPS counter
 	l.frameTime = l.getFrameTime()
 	rl.DrawText(fmt.Sprintf("FPS: %d", int(1.0/l.frameTime)), 10, 10, 30, rl.White)
 
-	for _, gameObject := range l.GameObjects {
-		if pillar, ok := gameObject.(o.IHittable); ok {
-			if pillar.GetHitBox().CheckCollision(l.Camera.Transform) {
-				rl.DrawText("Collision", 10, 50, 30, rl.White)
-			}
-		}
-	}
-
 	// Update camera
 	l.Camera.Update(l.frameTime, l.WorldMap)
 }
 
-func (l *Level) drawGameObject() {
+func (l *Level) updateGameObjects() {
+	var indicesToRemove []int
+	var gameObjectsHit []o.IHittable
+
 	l.GameObjects = o.SortGameObjectsByDistanceToCamera(*l.Camera, l.GameObjects)
-	for _, sprite := range l.GameObjects {
-		sprite.GetSprite().Draw(*l.Camera)
+
+	for index, gameObject := range l.GameObjects {
+		// Check for collision
+		if hittable, ok := gameObject.(o.IHittable); ok {
+			if hittable.GetHitBox().CheckCollision(l.Camera.Transform) {
+				gameObjectsHit = append(gameObjectsHit, hittable)
+			}
+		}
+
+		// Destroy destroyable objects
+		toDraw := true
+		if destroyable, ok := gameObject.(o.IDestroyable); ok {
+			if destroyable.ShouldDestroy() {
+				indicesToRemove = append(indicesToRemove, index)
+				l.GameObjects[index].Close()
+				toDraw = false
+			}
+		}
+
+		// Draw object
+		if toDraw {
+			gameObject.GetSprite().Draw(*l.Camera)
+		}
+	}
+	// Run the OnHit function of the last object hit - the closest one to the camera
+	if len(gameObjectsHit) > 0 {
+		gameObjectsHit[len(gameObjectsHit)-1].OnHit()
+	}
+
+	// Remove destroyable objects in reverse order
+	for i := len(indicesToRemove) - 1; i >= 0; i-- {
+		index := indicesToRemove[i]
+		l.GameObjects = l.GameObjects.Remove(index)
 	}
 }
 
@@ -191,5 +217,5 @@ func (l *Level) getFrameTime() float64 {
 func (l *Level) Close() {
 	l.Walls.Close()
 	l.FloorCeiling.Close()
-	o.UnloadGameObjects(l.GameObjects)
+	l.GameObjects.Close()
 }
