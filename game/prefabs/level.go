@@ -24,10 +24,10 @@ type LevelData struct {
 func loadLevelDataFromFile(path string) LevelData {
 	// Open the file
 	levelFile, err := os.Open(path)
-	defer levelFile.Close()
 	if err != nil {
 		panic(err)
 	}
+	defer levelFile.Close()
 
 	fileInfo, err := levelFile.Stat()
 	if err != nil {
