@@ -163,6 +163,14 @@ func (l *Level) MainLoop() {
 	l.frameTime = l.getFrameTime()
 	rl.DrawText(fmt.Sprintf("FPS: %d", int(1.0/l.frameTime)), 10, 10, 30, rl.White)
 
+	for _, gameObject := range l.GameObjects {
+		if pillar, ok := gameObject.(o.IHittable); ok {
+			if pillar.GetHitBox().CheckCollision(l.Camera.Transform) {
+				rl.DrawText("Collision", 10, 50, 30, rl.White)
+			}
+		}
+	}
+
 	// Update camera
 	l.Camera.Update(l.frameTime, l.WorldMap)
 }
