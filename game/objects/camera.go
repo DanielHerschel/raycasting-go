@@ -22,7 +22,7 @@ func (c *Camera) Update(frameTime float64, worldMap [][]int) {
 	if rl.IsKeyDown(rl.KeyLeftShift) {
 		moveSpeed *= 1.6
 	}
-	rotSpeed := rl.GetMouseDelta().X * float32(frameTime*0.2)
+	rotSpeed := rl.GetMouseDelta().X * float32(frameTime*u.CAMERA_SPEED)
 
 	if rl.IsKeyDown(rl.KeyW) {
 		if worldMap[int(c.Position.X+c.Direction.X*moveSpeed)][int(c.Position.Y)] == 0 {

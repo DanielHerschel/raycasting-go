@@ -4,6 +4,8 @@ const (
 	SCREEN_WIDTH  = 1920
 	SCREEN_HEIGHT = 1080
 	FRAME_RATE    = 60
+
+	CAMERA_SPEED = 0.1
 )
 
 const (
