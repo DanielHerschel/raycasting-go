@@ -18,7 +18,7 @@ type Camera struct {
 }
 
 func (c *Camera) Update(frameTime float64, worldMap [][]int) {
-	moveSpeed := float32(frameTime * 3.0)
+	moveSpeed := float32(frameTime * 2.0)
 	if rl.IsKeyDown(rl.KeyLeftShift) {
 		moveSpeed *= 1.6
 	}
