@@ -117,7 +117,7 @@ func NewLevel(levelFilePath string) *Level {
 	// Camera settings
 	camera := o.NewCamera(
 		levelData.Player,
-		rl.NewVector2(0.0, 0.66),
+		u.CAMERA_FOV,
 	)
 
 	// Load Game Objects
