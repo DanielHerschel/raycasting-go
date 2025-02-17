@@ -1,7 +1,6 @@
 package objects
 
 import (
-
 	u "github.com/danielherschel/raylib-test/game/utils"
 )
 
@@ -10,7 +9,7 @@ type IGameObject interface {
 	Close()
 }
 
-func SortGameObjectsByDistanceToCamera(camera Camera, sprites []IGameObject) (sorted []IGameObject) {
+func SortGameObjectsByDistanceToCamera(camera Camera, sprites GameObjects) (sorted GameObjects) {
 	spriteData := make(map[int]float32, len(sprites))
 	for i := 0; i < len(sprites); i++ {
 		spriteData[i] = ((camera.Position.X-sprites[i].GetSprite().Position.X)*(camera.Position.X-sprites[i].GetSprite().Position.X) + (camera.Position.Y-sprites[i].GetSprite().Position.Y)*(camera.Position.Y-sprites[i].GetSprite().Position.Y))
@@ -25,8 +24,14 @@ func SortGameObjectsByDistanceToCamera(camera Camera, sprites []IGameObject) (so
 	return
 }
 
-func UnloadGameObjects(gameObjects []IGameObject) {
-	for i := 0; i < len(gameObjects); i++ {
-		gameObjects[i].Close()
+type GameObjects []IGameObject
+
+func (g GameObjects) Close() {
+	for i := 0; i < len(g); i++ {
+		g[i].Close()
 	}
+}
+
+func (g GameObjects) Remove(index int) GameObjects {
+	return append(g[:index], g[index+1:]...)
 }

@@ -10,7 +10,7 @@ func NewPillar(x, y float32) Pillar {
 
 	return Pillar{
 		o.NewSprite(
-			o.NewTransform(rl.NewVector2(x, y), rl.NewVector2(0.0, 0.0)), 
+			o.NewTransform(rl.NewVector2(x, y), rl.NewVector2(0.0, 0.0)),
 			pillarTexture,
 		),
 	}
