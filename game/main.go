@@ -16,6 +16,7 @@ func main() {
 	rl.InitWindow(u.SCREEN_WIDTH, u.SCREEN_HEIGHT, "Raycaster")
 	rl.SetTargetFPS(u.FRAME_RATE)
 	rl.SetBlendMode(rl.BlendAlpha)
+	rl.DisableCursor()
 
 	level := p.NewLevel(u.LEVEL_1_PATH)
 	defer level.Close()

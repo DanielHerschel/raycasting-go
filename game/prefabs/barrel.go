@@ -38,7 +38,7 @@ func (b Barrel) Close() {
 
 // IHittable functions
 func (b *Barrel) OnHit() {
-	if rl.IsKeyPressed(rl.KeySpace) {
+	if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
 		b.Health--
 		if b.Health <= 0 {
 			b.ShouldDest = true
