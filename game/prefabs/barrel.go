@@ -8,18 +8,22 @@ import (
 func NewBarrel(x, y float32) *Barrel {
 	barrelTexture := rl.LoadTexture("assets/sprites/barrel.png")
 
+	position := o.NewTransform(rl.NewVector2(x, y), rl.NewVector2(0.0, 0.0))
+
 	return &Barrel{
+		position,
 		o.NewSprite(
-			o.NewTransform(rl.NewVector2(x, y), rl.NewVector2(0.0, 0.0)),
+			position,
 			barrelTexture,
 		),
-		o.NewHitBox(x, y, 0.5),
+		o.NewHitBox(position, 0.5),
 		2,
 		false,
 	}
 }
 
 type Barrel struct {
+	o.Transform
 	o.Sprite
 	o.HitBox
 
@@ -27,18 +31,23 @@ type Barrel struct {
 	ShouldDest bool
 }
 
-// GameObject functions
-func (b Barrel) GetSprite() o.Sprite {
-	return b.Sprite
+// IGameObject functions
+func (b Barrel) GetTransform() o.Transform {
+	return b.Transform
 }
 
 func (b Barrel) Close() {
 	b.Sprite.Close()
 }
 
+// ISprite functions
+func (b Barrel) GetSprite() o.Sprite {
+	return b.Sprite
+}
+
 // IHittable functions
 func (b *Barrel) OnHit() {
-	if rl.IsKeyPressed(rl.KeySpace) {
+	if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
 		b.Health--
 		if b.Health <= 0 {
 			b.ShouldDest = true

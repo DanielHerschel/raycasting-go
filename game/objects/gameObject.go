@@ -2,24 +2,25 @@ package objects
 
 import (
 	u "github.com/danielherschel/raylib-test/game/utils"
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type IGameObject interface {
-	GetSprite() Sprite
+	GetTransform() Transform
 	Close()
 }
 
-func SortGameObjectsByDistanceToCamera(camera Camera, sprites GameObjects) (sorted GameObjects) {
-	spriteData := make(map[int]float32, len(sprites))
-	for i := 0; i < len(sprites); i++ {
-		spriteData[i] = ((camera.Position.X-sprites[i].GetSprite().Position.X)*(camera.Position.X-sprites[i].GetSprite().Position.X) + (camera.Position.Y-sprites[i].GetSprite().Position.Y)*(camera.Position.Y-sprites[i].GetSprite().Position.Y))
+func SortGameObjectsByDistanceToPoint(pos rl.Vector2, gameObjects GameObjects) (sorted GameObjects) {
+	spriteData := make(map[int]float32, len(gameObjects))
+	for i := 0; i < len(gameObjects); i++ {
+		spriteData[i] = ((pos.X-gameObjects[i].GetTransform().Position.X)*(pos.X-gameObjects[i].GetTransform().Position.X) + (pos.Y-gameObjects[i].GetTransform().Position.Y)*(pos.Y-gameObjects[i].GetTransform().Position.Y))
 	}
 
 	pairList := u.SortMap(spriteData)
 
 	for i := 0; i < len(pairList); i++ {
 		index := pairList[i].Key
-		sorted = append(sorted, sprites[index])
+		sorted = append(sorted, gameObjects[index])
 	}
 	return
 }

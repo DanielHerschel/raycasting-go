@@ -20,10 +20,16 @@ type Pillar struct {
 	o.Sprite
 }
 
-func (p Pillar) GetSprite() o.Sprite {
-	return p.Sprite
+// IGameObject functions
+func (p Pillar) GetTransform() o.Transform {
+	return p.Transform
 }
 
 func (p Pillar) Close() {
 	p.Sprite.Close()
+}
+
+// ISprite functions
+func (p Pillar) GetSprite() o.Sprite {
+	return p.Sprite
 }

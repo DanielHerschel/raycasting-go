@@ -8,6 +8,10 @@ import (
 	u "github.com/danielherschel/raylib-test/game/utils"
 )
 
+type ISprite interface {
+	GetSprite() Sprite
+}
+
 func NewSprite(transform Transform, texture rl.Texture2D) Sprite {
 	return Sprite{Transform: transform, Texture: texture}
 }
@@ -15,6 +19,10 @@ func NewSprite(transform Transform, texture rl.Texture2D) Sprite {
 type Sprite struct {
 	Transform
 	Texture rl.Texture2D
+}
+
+func GetTransform(s Sprite) Transform {
+	return s.Transform
 }
 
 func (s Sprite) Draw(camera Camera) {

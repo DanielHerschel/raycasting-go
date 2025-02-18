@@ -15,11 +15,9 @@ type IDestroyable interface {
 	ShouldDestroy() bool
 }
 
-func NewHitBox(x, y, size float32) HitBox {
+func NewHitBox(transform Transform, size float32) HitBox {
 	return HitBox{
-		Transform: Transform{
-			Position: rl.NewVector2(x, y),
-		},
+		Transform: transform,
 		Size: size,
 	}
 }

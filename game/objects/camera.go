@@ -3,54 +3,27 @@ package objects
 import (
 	"math"
 
-	rl "github.com/gen2brain/raylib-go/raylib"
 	u "github.com/danielherschel/raylib-test/game/utils"
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func NewCamera(transform Transform, plane rl.Vector2) *Camera {
-	return &Camera{Transform: transform, Plane: plane, ZBuffer: make([]float32, u.SCREEN_WIDTH)}
+func NewCamera(transform Transform, fov float32) *Camera {
+	camera := &Camera{Transform: transform, Plane: rl.NewVector2(0, 0), ZBuffer: make([]float32, u.SCREEN_WIDTH)}
+	camera.SetFOV(fov)
+	return camera
 }
 
 type Camera struct {
 	Transform
-	Plane     rl.Vector2
-	ZBuffer  []float32
+	Plane   rl.Vector2
+	ZBuffer []float32
 }
 
-func (c *Camera) Update(frameTime float64, worldMap [][]int) {
-	moveSpeed := float32(frameTime * 3.0)
-	rotSpeed := float32(frameTime * 3.0)
-
-	if rl.IsKeyDown(rl.KeyUp) {
-		if worldMap[int(c.Position.X+c.Direction.X*moveSpeed)][int(c.Position.Y)] == 0 {
-			c.Position.X += c.Direction.X * moveSpeed
-		}
-		if worldMap[int(c.Position.X)][int(c.Position.Y+c.Direction.Y*moveSpeed)] == 0 {
-			c.Position.Y += c.Direction.Y * moveSpeed
-		}
-	}
-	if rl.IsKeyDown(rl.KeyDown) {
-		if worldMap[int(c.Position.X-c.Direction.X*moveSpeed)][int(c.Position.Y)] == 0 {
-			c.Position.X -= c.Direction.X * moveSpeed
-		}
-		if worldMap[int(c.Position.X)][int(c.Position.Y-c.Direction.Y*moveSpeed)] == 0 {
-			c.Position.Y -= c.Direction.Y * moveSpeed
-		}
-	}
-	if rl.IsKeyDown(rl.KeyRight) {
-		oldDirX := c.Direction.X
-		c.Direction.X = c.Direction.X*float32(math.Cos(float64(-rotSpeed))) - c.Direction.Y*float32(math.Sin(float64(-rotSpeed)))
-		c.Direction.Y = oldDirX*float32(math.Sin(float64(-rotSpeed))) + c.Direction.Y*float32(math.Cos(float64(-rotSpeed)))
-		oldPlaneX := c.Plane.X
-		c.Plane.X = c.Plane.X*float32(math.Cos(float64(-rotSpeed))) - c.Plane.Y*float32(math.Sin(float64(-rotSpeed)))
-		c.Plane.Y = oldPlaneX*float32(math.Sin(float64(-rotSpeed))) + c.Plane.Y*float32(math.Cos(float64(-rotSpeed)))
-	}
-	if rl.IsKeyDown(rl.KeyLeft) {
-		oldDirX := c.Direction.X
-		c.Transform.Direction.X = c.Direction.X*float32(math.Cos(float64(rotSpeed))) - c.Direction.Y*float32(math.Sin(float64(rotSpeed)))
-		c.Transform.Direction.Y = oldDirX*float32(math.Sin(float64(rotSpeed))) + c.Direction.Y*float32(math.Cos(float64(rotSpeed)))
-		oldPlaneX := c.Plane.X
-		c.Plane.X = c.Plane.X*float32(math.Cos(float64(rotSpeed))) - c.Plane.Y*float32(math.Sin(float64(rotSpeed)))
-		c.Plane.Y = oldPlaneX*float32(math.Sin(float64(rotSpeed))) + c.Plane.Y*float32(math.Cos(float64(rotSpeed)))
-	}
+// SetFOV sets the camera's field of view (FOV) in degrees.
+func (c *Camera) SetFOV(fov float32) {
+	// Calculate the new length of the Plane vector based on the desired FOV.
+	// The FOV is the angle between the left and right edges of the view.
+	// The Plane vector length is calculated as tan(FOV / 2).
+	planeLength := float32(math.Tan(float64(fov) * math.Pi / 360.0))
+	c.Plane = rl.NewVector2(c.Direction.Y*planeLength, -c.Direction.X*planeLength)
 }

@@ -17,7 +17,7 @@ type LevelData struct {
 	Id          int
 	Name        string
 	WorldMap    [][]int
-	Player      o.Transform
+	PlayerStart o.Transform
 	GameObjects []o.IGameObject
 }
 
@@ -92,7 +92,7 @@ func loadLevelDataFromFile(path string) LevelData {
 		Id:          id,
 		Name:        name,
 		WorldMap:    worldMap,
-		Player:      player,
+		PlayerStart: player,
 		GameObjects: gameObjects,
 	}
 }
@@ -114,11 +114,8 @@ func NewLevel(levelFilePath string) *Level {
 
 	floorCeiling := NewFloorCeiling(floorTexture, ceilingTexture)
 
-	// Camera settings
-	camera := o.NewCamera(
-		levelData.Player,
-		rl.NewVector2(0.0, 0.66),
-	)
+	// Player initialization
+	player := NewPlayer(levelData.PlayerStart)
 
 	// Load Game Objects
 	gameObjects := levelData.GameObjects
@@ -131,7 +128,7 @@ func NewLevel(levelFilePath string) *Level {
 		Walls:        walls,
 		FloorCeiling: floorCeiling,
 		GameObjects:  gameObjects,
-		Camera:       camera,
+		Player:       player,
 		currentTime:  currentTime,
 		oldTime:      oldTime,
 	}
@@ -143,7 +140,7 @@ type Level struct {
 	FloorCeiling FloorCeiling
 	GameObjects  o.GameObjects
 
-	Camera *o.Camera
+	Player *Player
 
 	// Time and physics
 	currentTime int64
@@ -153,8 +150,8 @@ type Level struct {
 
 func (l *Level) MainLoop() {
 	// Draw world
-	l.FloorCeiling.Draw(*l.Camera)
-	l.Walls.Draw(*l.Camera)
+	l.FloorCeiling.Draw(*l.Player.Camera)
+	l.Walls.Draw(*l.Player.Camera)
 
 	// Draw Sprites
 	l.updateGameObjects()
@@ -164,19 +161,19 @@ func (l *Level) MainLoop() {
 	rl.DrawText(fmt.Sprintf("FPS: %d", int(1.0/l.frameTime)), 10, 10, 30, rl.White)
 
 	// Update camera
-	l.Camera.Update(l.frameTime, l.WorldMap)
+	l.Player.Update(l.frameTime, l.WorldMap)
 }
 
 func (l *Level) updateGameObjects() {
 	var indicesToRemove []int
 	var gameObjectsHit []o.IHittable
 
-	l.GameObjects = o.SortGameObjectsByDistanceToCamera(*l.Camera, l.GameObjects)
+	l.GameObjects = o.SortGameObjectsByDistanceToPoint(l.Player.Position, l.GameObjects)
 
 	for index, gameObject := range l.GameObjects {
-		// Check for collision
+		// Check for crosshair collision
 		if hittable, ok := gameObject.(o.IHittable); ok {
-			if hittable.GetHitBox().CheckCollision(l.Camera.Transform) {
+			if hittable.GetHitBox().CheckCollision(l.Player.Transform) {
 				gameObjectsHit = append(gameObjectsHit, hittable)
 			}
 		}
@@ -186,14 +183,15 @@ func (l *Level) updateGameObjects() {
 		if destroyable, ok := gameObject.(o.IDestroyable); ok {
 			if destroyable.ShouldDestroy() {
 				indicesToRemove = append(indicesToRemove, index)
-				l.GameObjects[index].Close()
 				toDraw = false
 			}
 		}
 
-		// Draw object
+		// Draw sprites
 		if toDraw {
-			gameObject.GetSprite().Draw(*l.Camera)
+			if sprite, ok := gameObject.(o.ISprite); ok {
+				sprite.GetSprite().Draw(*l.Player.Camera)
+			}
 		}
 	}
 	// Run the OnHit function of the last object hit - the closest one to the camera
@@ -204,6 +202,7 @@ func (l *Level) updateGameObjects() {
 	// Remove destroyable objects in reverse order
 	for i := len(indicesToRemove) - 1; i >= 0; i-- {
 		index := indicesToRemove[i]
+		l.GameObjects[index].Close()
 		l.GameObjects = l.GameObjects.Remove(index)
 	}
 }
