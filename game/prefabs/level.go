@@ -174,7 +174,7 @@ func (l *Level) updateGameObjects() {
 	l.GameObjects = o.SortGameObjectsByDistanceToCamera(*l.Camera, l.GameObjects)
 
 	for index, gameObject := range l.GameObjects {
-		// Check for collision
+		// Check for crosshair collision
 		if hittable, ok := gameObject.(o.IHittable); ok {
 			if hittable.GetHitBox().CheckCollision(l.Camera.Transform) {
 				gameObjectsHit = append(gameObjectsHit, hittable)
@@ -190,7 +190,7 @@ func (l *Level) updateGameObjects() {
 			}
 		}
 
-		// Draw object
+		// Draw sprites
 		if toDraw {
 			if sprite, ok := gameObject.(o.ISprite); ok {
 				sprite.GetSprite().Draw(*l.Camera)
