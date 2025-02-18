@@ -186,14 +186,15 @@ func (l *Level) updateGameObjects() {
 		if destroyable, ok := gameObject.(o.IDestroyable); ok {
 			if destroyable.ShouldDestroy() {
 				indicesToRemove = append(indicesToRemove, index)
-				l.GameObjects[index].Close()
 				toDraw = false
 			}
 		}
 
 		// Draw object
 		if toDraw {
-			gameObject.GetSprite().Draw(*l.Camera)
+			if sprite, ok := gameObject.(o.ISprite); ok {
+				sprite.GetSprite().Draw(*l.Camera)
+			}
 		}
 	}
 	// Run the OnHit function of the last object hit - the closest one to the camera
@@ -204,6 +205,7 @@ func (l *Level) updateGameObjects() {
 	// Remove destroyable objects in reverse order
 	for i := len(indicesToRemove) - 1; i >= 0; i-- {
 		index := indicesToRemove[i]
+		l.GameObjects[index].Close()
 		l.GameObjects = l.GameObjects.Remove(index)
 	}
 }

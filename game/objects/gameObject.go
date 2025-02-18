@@ -5,14 +5,14 @@ import (
 )
 
 type IGameObject interface {
-	GetSprite() Sprite
+	GetTransform() Transform
 	Close()
 }
 
 func SortGameObjectsByDistanceToCamera(camera Camera, sprites GameObjects) (sorted GameObjects) {
 	spriteData := make(map[int]float32, len(sprites))
 	for i := 0; i < len(sprites); i++ {
-		spriteData[i] = ((camera.Position.X-sprites[i].GetSprite().Position.X)*(camera.Position.X-sprites[i].GetSprite().Position.X) + (camera.Position.Y-sprites[i].GetSprite().Position.Y)*(camera.Position.Y-sprites[i].GetSprite().Position.Y))
+		spriteData[i] = ((camera.Position.X-sprites[i].GetTransform().Position.X)*(camera.Position.X-sprites[i].GetTransform().Position.X) + (camera.Position.Y-sprites[i].GetTransform().Position.Y)*(camera.Position.Y-sprites[i].GetTransform().Position.Y))
 	}
 
 	pairList := u.SortMap(spriteData)
