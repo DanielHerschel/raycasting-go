@@ -10,17 +10,17 @@ type IGameObject interface {
 	Close()
 }
 
-func SortGameObjectsByDistanceToPoint(pos rl.Vector2, sprites GameObjects) (sorted GameObjects) {
-	spriteData := make(map[int]float32, len(sprites))
-	for i := 0; i < len(sprites); i++ {
-		spriteData[i] = ((pos.X-sprites[i].GetTransform().Position.X)*(pos.X-sprites[i].GetTransform().Position.X) + (pos.Y-sprites[i].GetTransform().Position.Y)*(pos.Y-sprites[i].GetTransform().Position.Y))
+func SortGameObjectsByDistanceToPoint(pos rl.Vector2, gameObjects GameObjects) (sorted GameObjects) {
+	spriteData := make(map[int]float32, len(gameObjects))
+	for i := 0; i < len(gameObjects); i++ {
+		spriteData[i] = ((pos.X-gameObjects[i].GetTransform().Position.X)*(pos.X-gameObjects[i].GetTransform().Position.X) + (pos.Y-gameObjects[i].GetTransform().Position.Y)*(pos.Y-gameObjects[i].GetTransform().Position.Y))
 	}
 
 	pairList := u.SortMap(spriteData)
 
 	for i := 0; i < len(pairList); i++ {
 		index := pairList[i].Key
-		sorted = append(sorted, sprites[index])
+		sorted = append(sorted, gameObjects[index])
 	}
 	return
 }
