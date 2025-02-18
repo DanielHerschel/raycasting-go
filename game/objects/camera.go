@@ -8,7 +8,7 @@ import (
 )
 
 func NewCamera(transform Transform, fov float32) *Camera {
-	camera := &Camera{Transform: transform, Plane: rl.NewVector2(0,0), ZBuffer: make([]float32, u.SCREEN_WIDTH)}
+	camera := &Camera{Transform: transform, Plane: rl.NewVector2(0, 0), ZBuffer: make([]float32, u.SCREEN_WIDTH)}
 	camera.SetFOV(fov)
 	return camera
 }
@@ -56,7 +56,7 @@ func (c *Camera) Update(frameTime float64, worldMap [][]int) {
 		if worldMap[int(c.Position.X-walkDir.X*moveSpeed)][int(c.Position.Y)] == 0 {
 			c.Position.X -= walkDir.X * moveSpeed * 0.6
 		}
-		if worldMap[int(c.Position.X)][int(c.Position.Y+walkDir.Y*moveSpeed)] == 0 {
+		if worldMap[int(c.Position.X)][int(c.Position.Y-walkDir.Y*moveSpeed)] == 0 {
 			c.Position.Y -= walkDir.Y * moveSpeed * 0.6
 		}
 	}
@@ -65,7 +65,7 @@ func (c *Camera) Update(frameTime float64, worldMap [][]int) {
 		if worldMap[int(c.Position.X-walkDir.X*moveSpeed)][int(c.Position.Y)] == 0 {
 			c.Position.X -= walkDir.X * moveSpeed * 0.6
 		}
-		if worldMap[int(c.Position.X)][int(c.Position.Y+walkDir.Y*moveSpeed)] == 0 {
+		if worldMap[int(c.Position.X)][int(c.Position.Y-walkDir.Y*moveSpeed)] == 0 {
 			c.Position.Y -= walkDir.Y * moveSpeed * 0.6
 		}
 	}
