@@ -2,6 +2,7 @@ package objects
 
 import (
 	u "github.com/danielherschel/raylib-test/game/utils"
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type IGameObject interface {
@@ -9,10 +10,10 @@ type IGameObject interface {
 	Close()
 }
 
-func SortGameObjectsByDistanceToCamera(camera Camera, sprites GameObjects) (sorted GameObjects) {
+func SortGameObjectsByDistanceToPoint(pos rl.Vector2, sprites GameObjects) (sorted GameObjects) {
 	spriteData := make(map[int]float32, len(sprites))
 	for i := 0; i < len(sprites); i++ {
-		spriteData[i] = ((camera.Position.X-sprites[i].GetTransform().Position.X)*(camera.Position.X-sprites[i].GetTransform().Position.X) + (camera.Position.Y-sprites[i].GetTransform().Position.Y)*(camera.Position.Y-sprites[i].GetTransform().Position.Y))
+		spriteData[i] = ((pos.X-sprites[i].GetTransform().Position.X)*(pos.X-sprites[i].GetTransform().Position.X) + (pos.Y-sprites[i].GetTransform().Position.Y)*(pos.Y-sprites[i].GetTransform().Position.Y))
 	}
 
 	pairList := u.SortMap(spriteData)
