@@ -39,6 +39,10 @@ type Game struct {
 }
 
 func (g *Game) MainLoop() {
+	// Timing for FPS counter
+	g.frameTime = g.getFrameTime()
+	rl.DrawText(fmt.Sprintf("FPS: %d", int(1.0/g.frameTime)), 10, 10, 30, rl.White)
+
 	playerCamera := *g.CurrentLevel.Player.Camera
 
 	// Draw world
@@ -47,10 +51,6 @@ func (g *Game) MainLoop() {
 
 	// Draw Sprites
 	g.updateGameObjects()
-
-	// Timing for FPS counter
-	g.frameTime = g.getFrameTime()
-	rl.DrawText(fmt.Sprintf("FPS: %d", int(1.0/g.frameTime)), 10, 10, 30, rl.White)
 
 	// Update camera
 	g.CurrentLevel.Player.Update(g.frameTime, g.CurrentLevel.WorldMap)

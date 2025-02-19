@@ -9,7 +9,13 @@ import (
 	o "github.com/danielherschel/raylib-test/game/objects"
 )
 
-func NewFloorCeiling(floorTexture []color.RGBA, ceilingTexture []color.RGBA) FloorCeiling {
+func NewFloorCeiling() FloorCeiling {
+	floorImage, ceilingImage := rl.LoadImage(u.TEXTURE_STONE_BRICKS), rl.LoadImage(u.TEXTURE_WOOD)
+	floorTexture := rl.LoadImageColors(floorImage)
+	ceilingTexture := rl.LoadImageColors(ceilingImage)
+	u.UnloadImages(floorImage, ceilingImage)
+
+
 	floorCeilImage := rl.GenImageColor(u.SCREEN_WIDTH, u.SCREEN_HEIGHT, rl.White)
 	floorCeilTexture := rl.LoadTextureFromImage(floorCeilImage)
 	rl.UnloadImage(floorCeilImage)

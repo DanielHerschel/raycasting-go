@@ -5,7 +5,6 @@ import (
 
 	o "github.com/danielherschel/raylib-test/game/objects"
 	"github.com/danielherschel/raylib-test/game/schemas"
-	u "github.com/danielherschel/raylib-test/game/utils"
 )
 
 // Level
@@ -36,13 +35,7 @@ func NewLevelFromFile(path string) *Level {
 
 	// Load map data
 	walls := NewWalls(levelData.WorldMap)
-
-	floorImage, ceilingImage := rl.LoadImage(u.TEXTURE_STONE_BRICKS), rl.LoadImage(u.TEXTURE_WOOD)
-	floorTexture := rl.LoadImageColors(floorImage)
-	ceilingTexture := rl.LoadImageColors(ceilingImage)
-	u.UnloadImages(floorImage, ceilingImage)
-
-	floorCeiling := NewFloorCeiling(floorTexture, ceilingTexture)
+	floorCeiling := NewFloorCeiling()
 
 	return &Level{
 		Id:           levelData.ID,
