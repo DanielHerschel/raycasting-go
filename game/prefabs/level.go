@@ -1,111 +1,41 @@
 package prefabs
 
 import (
-	"encoding/json"
-	"fmt"
-	"os"
-	"time"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 
 	o "github.com/danielherschel/raylib-test/game/objects"
+	"github.com/danielherschel/raylib-test/game/schemas"
 	u "github.com/danielherschel/raylib-test/game/utils"
 )
 
-// Level data from file
-type LevelData struct {
-	Id          int
-	Name        string
-	WorldMap    [][]int
-	PlayerStart o.Transform
-	GameObjects []o.IGameObject
-}
-
-func loadLevelDataFromFile(path string) LevelData {
-	// Open the file
-	levelFile, err := os.Open(path)
-	if err != nil {
-		panic(err)
-	}
-	defer levelFile.Close()
-
-	fileInfo, err := levelFile.Stat()
-	if err != nil {
-		panic(err)
-	}
-
-	fileSize := fileInfo.Size()
-	fileData := make([]byte, fileSize)
-	_, err = levelFile.Read(fileData)
-	if err != nil {
-		panic(err)
-	}
-
-	// Parse the JSON data
-	var levelData map[string]interface{}
-	err = json.Unmarshal(fileData, &levelData)
-	if err != nil {
-		panic(err)
-	}
-
-	// Extract the level data
-	id := int(levelData["id"].(float64))
-	name := levelData["name"].(string)
-
-	// Extract world map data
-	worldMapData := levelData["worldMap"].([]interface{})
-	var worldMap [][]int
-	for _, row := range worldMapData {
-		row := row.([]interface{})
-		var intRow []int
-		for _, cell := range row {
-			intRow = append(intRow, int(cell.(float64)))
-		}
-		worldMap = append(worldMap, intRow)
-	}
+// Level
+func NewLevelFromFile(path string) *Level {
+	levelData := schemas.NewLevelSchemaFromFile(path)
 
 	// Extract player data
-	playerData := levelData["player"].(map[string]interface{})
-	playerPosition := playerData["position"].([]interface{})
-	playerDirection := playerData["direction"].([]interface{})
-	player := o.Transform{
-		Position:  rl.NewVector2(float32(playerPosition[0].(float64)), float32(playerPosition[1].(float64))),
-		Direction: rl.NewVector2(float32(playerDirection[0].(float64)), float32(playerDirection[1].(float64))),
-	}
+	playerPosition := levelData.PlayerStartData.Position
+	playerDirection := levelData.PlayerStartData.Direction
+	player := NewPlayer(o.Transform{
+		Position:  rl.NewVector2(float32(playerPosition[0]), float32(playerPosition[1])),
+		Direction: rl.NewVector2(float32(playerDirection[0]), float32(playerDirection[1])),
+	})
 
 	// Extract game objects data
-	gameObjectsData := levelData["gameObjects"].([]interface{})
+	gameObjectsData := levelData.GameObjectsData
 	var gameObjects []o.IGameObject
 	for _, gameObjectData := range gameObjectsData {
-		gameObject := gameObjectData.(map[string]interface{})
-		objectPosition := gameObject["position"].([]interface{})
+		objectPosition := gameObjectData.Position
 
-		switch gameObject["type"].(string) {
+		switch gameObjectData.Type {
 		case "barrel":
-			gameObjects = append(gameObjects, NewBarrel(float32(objectPosition[0].(float64)), float32(objectPosition[1].(float64))))
+			gameObjects = append(gameObjects, NewBarrel(float32(objectPosition[0]), float32(objectPosition[1])))
 		case "pillar":
-			gameObjects = append(gameObjects, NewPillar(float32(objectPosition[0].(float64)), float32(objectPosition[1].(float64))))
+			gameObjects = append(gameObjects, NewPillar(float32(objectPosition[0]), float32(objectPosition[1])))
 		}
 	}
 
-	return LevelData{
-		Id:          id,
-		Name:        name,
-		WorldMap:    worldMap,
-		PlayerStart: player,
-		GameObjects: gameObjects,
-	}
-}
-
-// Level struct
-func NewLevel(levelFilePath string) *Level {
-	levelData := loadLevelDataFromFile(levelFilePath)
-	fmt.Print(levelData)
-
 	// Load map data
-	worldMap := levelData.WorldMap
-
-	walls := NewWalls(worldMap)
+	walls := NewWalls(levelData.WorldMap)
 
 	floorImage, ceilingImage := rl.LoadImage(u.TEXTURE_STONE_BRICKS), rl.LoadImage(u.TEXTURE_WOOD)
 	floorTexture := rl.LoadImageColors(floorImage)
@@ -114,103 +44,26 @@ func NewLevel(levelFilePath string) *Level {
 
 	floorCeiling := NewFloorCeiling(floorTexture, ceilingTexture)
 
-	// Player initialization
-	player := NewPlayer(levelData.PlayerStart)
-
-	// Load Game Objects
-	gameObjects := levelData.GameObjects
-
-	// Time and physics iunitialization
-	currentTime, oldTime := time.Now().UnixMilli(), int64(0)
-
 	return &Level{
-		WorldMap:     worldMap,
+		Id:           levelData.ID,
+		Name:         levelData.Name,
+		WorldMap:     levelData.WorldMap,
+		Player:       player,
+		GameObjects:  gameObjects,
 		Walls:        walls,
 		FloorCeiling: floorCeiling,
-		GameObjects:  gameObjects,
-		Player:       player,
-		currentTime:  currentTime,
-		oldTime:      oldTime,
 	}
 }
 
 type Level struct {
-	WorldMap     [][]int
+	Id       int
+	Name     string
+	WorldMap [][]int
+
+	Player       *Player
+	GameObjects  o.GameObjects
 	Walls        Walls
 	FloorCeiling FloorCeiling
-	GameObjects  o.GameObjects
-
-	Player *Player
-
-	// Time and physics
-	currentTime int64
-	oldTime     int64
-	frameTime   float64
-}
-
-func (l *Level) MainLoop() {
-	// Draw world
-	l.FloorCeiling.Draw(*l.Player.Camera)
-	l.Walls.Draw(*l.Player.Camera)
-
-	// Draw Sprites
-	l.updateGameObjects()
-
-	// Timing for FPS counter
-	l.frameTime = l.getFrameTime()
-	rl.DrawText(fmt.Sprintf("FPS: %d", int(1.0/l.frameTime)), 10, 10, 30, rl.White)
-
-	// Update camera
-	l.Player.Update(l.frameTime, l.WorldMap)
-}
-
-func (l *Level) updateGameObjects() {
-	var indicesToRemove []int
-	var gameObjectsHit []o.IHittable
-
-	l.GameObjects = o.SortGameObjectsByDistanceToPoint(l.Player.Position, l.GameObjects)
-
-	for index, gameObject := range l.GameObjects {
-		// Check for crosshair collision
-		if hittable, ok := gameObject.(o.IHittable); ok {
-			if hittable.GetHitBox().CheckCollision(l.Player.Transform) {
-				gameObjectsHit = append(gameObjectsHit, hittable)
-			}
-		}
-
-		// Destroy destroyable objects
-		toDraw := true
-		if destroyable, ok := gameObject.(o.IDestroyable); ok {
-			if destroyable.ShouldDestroy() {
-				indicesToRemove = append(indicesToRemove, index)
-				toDraw = false
-			}
-		}
-
-		// Draw sprites
-		if toDraw {
-			if sprite, ok := gameObject.(o.ISprite); ok {
-				sprite.GetSprite().Draw(*l.Player.Camera)
-			}
-		}
-	}
-	// Run the OnHit function of the last object hit - the closest one to the camera
-	if len(gameObjectsHit) > 0 {
-		gameObjectsHit[len(gameObjectsHit)-1].OnHit()
-	}
-
-	// Remove destroyable objects in reverse order
-	for i := len(indicesToRemove) - 1; i >= 0; i-- {
-		index := indicesToRemove[i]
-		l.GameObjects[index].Close()
-		l.GameObjects = l.GameObjects.Remove(index)
-	}
-}
-
-func (l *Level) getFrameTime() float64 {
-	l.oldTime = l.currentTime
-	l.currentTime = time.Now().UnixMilli()
-	return float64(l.currentTime-l.oldTime) / 1000.0
 }
 
 func (l *Level) Close() {

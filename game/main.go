@@ -3,7 +3,7 @@ package main
 import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 
-	p "github.com/danielherschel/raylib-test/game/prefabs"
+	"github.com/danielherschel/raylib-test/game/core"
 	u "github.com/danielherschel/raylib-test/game/utils"
 )
 
@@ -18,8 +18,7 @@ func main() {
 	rl.SetBlendMode(rl.BlendAlpha)
 	rl.DisableCursor()
 
-	level := p.NewLevel(u.LEVEL_1_PATH)
-	defer level.Close()
+	game := core.NewGame()
 
 	// HUD initialization
 	crosshair := rl.LoadTexture("assets/sprites/crosshair/x.png")
@@ -29,7 +28,7 @@ func main() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
 
-		level.MainLoop()
+		game.MainLoop()
 
 		// HUD
 		rl.DrawTexturePro(
