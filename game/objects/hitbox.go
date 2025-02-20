@@ -1,7 +1,7 @@
 package objects
 
 import (
-	"math"
+	// "math"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -16,33 +16,20 @@ type IDestroyable interface {
 }
 
 func NewHitBox(transform Transform, size float32) HitBox {
+	boundingBox := rl.NewBoundingBox(
+		rl.NewVector3(transform.Position.X-size/2, transform.Position.Y-size/2, 0), 
+		rl.NewVector3(transform.Position.X+size/2, transform.Position.Y+size/2, 0),
+	)
+
 	return HitBox{
-		Transform: transform,
-		Size: size,
+		Transform:   transform,
+		Size:        size,
+		BoundingBox: boundingBox,
 	}
 }
 
 type HitBox struct {
 	Transform
 	Size float32
-}
-
-func (h HitBox) CheckCollision(otherRay Transform) bool {
-	m := (otherRay.Direction.Y) / (otherRay.Direction.X)
-	perpM := -1 / m
-
-	halfSize := float64(h.Size / 2)
-	dx := float32(halfSize / math.Sqrt(float64(1+perpM*perpM)))
-	dy := perpM * dx
-
-	point1 := rl.NewVector2(h.Position.X-dx, h.Position.Y-dy)
-	point2 := rl.NewVector2(h.Position.X+dx, h.Position.Y+dy)
-
-	return rl.CheckCollisionLines(
-		point1,
-		point2,
-		rl.NewVector2(otherRay.Position.X, otherRay.Position.Y),
-		rl.NewVector2(otherRay.Position.X+otherRay.Direction.X*1e30, otherRay.Position.Y+otherRay.Direction.Y*1e30),
-		nil,
-	)
+	rl.BoundingBox
 }

@@ -7,6 +7,7 @@ import (
 	o "github.com/danielherschel/raylib-test/game/objects"
 	p "github.com/danielherschel/raylib-test/game/prefabs"
 	u "github.com/danielherschel/raylib-test/game/utils"
+	ph "github.com/danielherschel/raylib-test/game/physics"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -58,18 +59,19 @@ func (g *Game) MainLoop() {
 
 func (g *Game) updateGameObjects() {
 	var indicesToRemove []int
-	var gameObjectsHit []o.IHittable
+
+	player := g.CurrentLevel.Player
 
 	g.CurrentLevel.GameObjects = o.SortGameObjectsByDistanceToPoint(g.CurrentLevel.Player.Position, g.CurrentLevel.GameObjects)
 
-	for index, gameObject := range g.CurrentLevel.GameObjects {
-		// Check for crosshair collision
-		if hittable, ok := gameObject.(o.IHittable); ok {
-			if hittable.GetHitBox().CheckCollision(g.CurrentLevel.Player.Transform) {
-				gameObjectsHit = append(gameObjectsHit, hittable)
-			}
-		}
+	// check what is the crosshair is looking at
+	hittables := g.getAllHittables()
+	hittable := ph.CastRay(player.Position, player.Direction, hittables)
+	if hittable != nil {
+        hittable.OnHit()
+    }
 
+	for index, gameObject := range g.CurrentLevel.GameObjects {
 		// Destroy destroyable objects
 		toDraw := true
 		if destroyable, ok := gameObject.(o.IDestroyable); ok {
@@ -79,16 +81,12 @@ func (g *Game) updateGameObjects() {
 			}
 		}
 
-		// Draw sprites
+		// Draw the gameobject's sprite
 		if toDraw {
 			if sprite, ok := gameObject.(o.ISprite); ok {
-				sprite.GetSprite().Draw(*g.CurrentLevel.Player.Camera)
+				sprite.GetSprite().Draw(*player.Camera)
 			}
 		}
-	}
-	// Run the OnHit function of the last object hit - the closest one to the camera
-	if len(gameObjectsHit) > 0 {
-		gameObjectsHit[len(gameObjectsHit)-1].OnHit()
 	}
 
 	// Remove destroyable objects in reverse order
@@ -97,6 +95,24 @@ func (g *Game) updateGameObjects() {
 		g.CurrentLevel.GameObjects[index].Close()
 		g.CurrentLevel.GameObjects = g.CurrentLevel.GameObjects.Remove(index)
 	}
+}
+
+func (g *Game) getAllHittables() (hittables []o.IHittable) {
+	// Add the game objects to the hittables list
+	for _, obj := range g.CurrentLevel.GameObjects {
+		if hittable, ok := obj.(o.IHittable); ok {
+            hittables = append(hittables, hittable)
+        }
+	}
+
+	// Add the walls to the hittables list
+	for _, wall := range g.CurrentLevel.Walls.HitBoxes {
+		hittables = append(hittables, wall)
+	}
+
+	// TODO: add the enemies to the hittables list
+
+	return
 }
 
 func (g *Game) getFrameTime() float64 {
