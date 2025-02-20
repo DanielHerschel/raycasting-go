@@ -8,7 +8,7 @@ import (
 
 type IHittable interface {
 	GetHitBox() HitBox
-	OnHit()
+	OnHit(other IHittable)
 }
 
 type IDestroyable interface {
@@ -17,7 +17,7 @@ type IDestroyable interface {
 
 func NewHitBox(transform Transform, size float32) HitBox {
 	boundingBox := rl.NewBoundingBox(
-		rl.NewVector3(transform.Position.X-size/2, transform.Position.Y-size/2, 0), 
+		rl.NewVector3(transform.Position.X-size/2, transform.Position.Y-size/2, 0),
 		rl.NewVector3(transform.Position.X+size/2, transform.Position.Y+size/2, 0),
 	)
 

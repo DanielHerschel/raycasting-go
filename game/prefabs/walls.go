@@ -174,6 +174,6 @@ func (w Wall) GetHitBox() o.HitBox {
 	return w.HitBox
 }
 
-func (w Wall) OnHit() {
+func (w Wall) OnHit(other o.IHittable) {
 	// Walls do not interact with anything.
 }

@@ -5,8 +5,11 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func CastRay(origin rl.Vector2, direction rl.Vector2, hittables []o.IHittable) (o.IHittable) {
-	ray := rl.NewRay(rl.NewVector3(origin.X, origin.Y, 0), rl.NewVector3(direction.X, direction.Y, 0))
+func CastRay(origin o.IHittable, direction rl.Vector2, hittables []o.IHittable) bool {
+
+	originPosition := origin.GetHitBox().Position
+
+	ray := rl.NewRay(rl.NewVector3(originPosition.X, originPosition.Y, 0), rl.NewVector3(direction.X, direction.Y, 0))
 
 	var closestHittable o.IHittable
 	closestHittableDistance := float32(1e30)
@@ -18,5 +21,11 @@ func CastRay(origin rl.Vector2, direction rl.Vector2, hittables []o.IHittable) (
 			closestHittable = hittable
 		}
 	}
-	return closestHittable
+
+	if closestHittable != nil {
+		closestHittable.OnHit(origin)
+		return true
+	}
+
+	return false
 }

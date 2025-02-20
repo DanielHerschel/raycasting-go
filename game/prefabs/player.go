@@ -4,28 +4,37 @@ import (
 	"math"
 
 	o "github.com/danielherschel/raylib-test/game/objects"
+	ph "github.com/danielherschel/raylib-test/game/physics"
 	u "github.com/danielherschel/raylib-test/game/utils"
+
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 func NewPlayer(transform o.Transform) *Player {
 	return &Player{
 		transform,
+		o.NewHitBox(transform, 0.4),
 		o.NewCamera(transform, u.CAMERA_FOV),
 	}
 }
 
 type Player struct {
 	o.Transform
+	o.HitBox
 	Camera *o.Camera
 }
 
-func (p *Player) Update(frameTime float64, worldMap [][]int) {
-	p.HandleWalking(frameTime, worldMap)
+func (p *Player) Update(frameTime float64, currentLevel *Level) {
+	// check what the crosshair is looking at
+	hittables := currentLevel.GetAllHittables()
+	_ = ph.CastRay(p, p.Direction, hittables)
+
+	p.HandleWalking(frameTime, currentLevel.WorldMap)
 	p.HanldeCameraRotation(float32(frameTime))
 
-	// Sync the camera transform with the player transform
+	// Sync transforms with the player transform
 	p.Camera.Transform = p.Transform
+	p.HitBox.Transform = p.Transform
 }
 
 func (p *Player) HandleWalking(frameTime float64, worldMap [][]int) {
@@ -88,4 +97,13 @@ func (p Player) GetTransform() o.Transform {
 }
 
 func (p Player) Close() {
+}
+
+// IHittable functions
+func (p *Player) GetHitBox() o.HitBox {
+	return p.HitBox
+}
+
+func (p *Player) OnHit(other o.IHittable) {
+	// Handle player-enemy collision
 }
