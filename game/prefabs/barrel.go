@@ -46,11 +46,13 @@ func (b Barrel) GetSprite() o.Sprite {
 }
 
 // IHittable functions
-func (b *Barrel) OnHit() {
-	if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
-		b.Health--
-		if b.Health <= 0 {
-			b.ShouldDest = true
+func (b *Barrel) OnHit(other o.IHittable) {
+	if _, ok := other.(*Player); ok {
+		if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
+			b.Health--
+			if b.Health <= 0 {
+				b.ShouldDest = true
+			}
 		}
 	}
 }

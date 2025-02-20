@@ -16,12 +16,11 @@ func NewGame() *Game {
 	levels := []*p.Level{p.NewLevelFromFile(u.LEVEL_1_PATH)}
 	currentLevel := levels[0]
 
-
 	// Time and physics iunitialization
 	currentTime, oldTime := time.Now().UnixMilli(), int64(0)
 
 	return &Game{
-		Levels: levels,
+		Levels:       levels,
 		CurrentLevel: currentLevel,
 		currentTime:  currentTime,
 		oldTime:      oldTime,
@@ -29,7 +28,7 @@ func NewGame() *Game {
 }
 
 type Game struct {
-	Levels []*p.Level
+	Levels       []*p.Level
 	CurrentLevel *p.Level
 
 	// Time and physics
@@ -53,23 +52,15 @@ func (g *Game) MainLoop() {
 	g.updateGameObjects()
 
 	// Update camera
-	g.CurrentLevel.Player.Update(g.frameTime, g.CurrentLevel.WorldMap)
+	g.CurrentLevel.Player.Update(g.frameTime, g.CurrentLevel)
 }
 
 func (g *Game) updateGameObjects() {
 	var indicesToRemove []int
-	var gameObjectsHit []o.IHittable
 
 	g.CurrentLevel.GameObjects = o.SortGameObjectsByDistanceToPoint(g.CurrentLevel.Player.Position, g.CurrentLevel.GameObjects)
 
 	for index, gameObject := range g.CurrentLevel.GameObjects {
-		// Check for crosshair collision
-		if hittable, ok := gameObject.(o.IHittable); ok {
-			if hittable.GetHitBox().CheckCollision(g.CurrentLevel.Player.Transform) {
-				gameObjectsHit = append(gameObjectsHit, hittable)
-			}
-		}
-
 		// Destroy destroyable objects
 		toDraw := true
 		if destroyable, ok := gameObject.(o.IDestroyable); ok {
@@ -79,16 +70,12 @@ func (g *Game) updateGameObjects() {
 			}
 		}
 
-		// Draw sprites
+		// Draw the gameobject's sprite
 		if toDraw {
 			if sprite, ok := gameObject.(o.ISprite); ok {
 				sprite.GetSprite().Draw(*g.CurrentLevel.Player.Camera)
 			}
 		}
-	}
-	// Run the OnHit function of the last object hit - the closest one to the camera
-	if len(gameObjectsHit) > 0 {
-		gameObjectsHit[len(gameObjectsHit)-1].OnHit()
 	}
 
 	// Remove destroyable objects in reverse order
@@ -107,7 +94,6 @@ func (g *Game) getFrameTime() float64 {
 
 func (g *Game) Close() {
 	for _, level := range g.Levels {
-        level.Close()
-    }
+		level.Close()
+	}
 }
-

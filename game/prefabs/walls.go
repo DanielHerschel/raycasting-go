@@ -21,10 +21,20 @@ func getWalls() (wallsTextures []rl.Texture2D) {
 }
 
 func NewWalls(worldMap [][]int) Walls {
-	return Walls{worldMap: worldMap, wallTextures: getWalls()}
+	var hitboxes []Wall
+	for i := 0; i < len(worldMap); i++ {
+		for j := 0; j < len(worldMap[i]); j++ {
+			if worldMap[i][j] > 0 {
+				hitboxes = append(hitboxes, NewWall(i, j))
+			}
+		}
+	}
+
+	return Walls{HitBoxes: hitboxes, worldMap: worldMap, wallTextures: getWalls()}
 }
 
 type Walls struct {
+	HitBoxes     []Wall
 	worldMap     [][]int
 	wallTextures []rl.Texture2D
 }
@@ -130,4 +140,40 @@ func (w Walls) Draw(camera o.Camera) {
 
 func (w Walls) Close() {
 	u.UnloadTextures(w.wallTextures...)
+}
+
+// Wall struct
+// NewWall returns a new Wall with the given position. Position should be the top left most point of the wall.
+func NewWall(x, y int) Wall {
+	transform := o.NewTransform(rl.NewVector2(float32(x) + 0.5, float32(y) + 0.5), rl.NewVector2(0.0, 0.0))
+	return Wall{
+		HitBox: o.NewHitBox(
+			transform,
+			1,
+		),
+	}
+}
+
+type Wall struct {
+	o.Transform
+	o.HitBox
+}
+
+// IGameObject functions
+
+func (w Wall) GetTransform() o.Transform {
+	return w.Transform
+}
+
+func (w Wall) Close() {
+	// Wall does not need to be closed.
+}
+
+// IHittable functions
+func (w Wall) GetHitBox() o.HitBox {
+	return w.HitBox
+}
+
+func (w Wall) OnHit(other o.IHittable) {
+	// Walls do not interact with anything.
 }

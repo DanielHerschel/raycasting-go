@@ -64,3 +64,21 @@ func (l *Level) Close() {
 	l.FloorCeiling.Close()
 	l.GameObjects.Close()
 }
+
+func (l *Level) GetAllHittables() (hittables []o.IHittable) {
+	// Add the game objects to the hittables list
+	for _, obj := range l.GameObjects {
+		if hittable, ok := obj.(o.IHittable); ok {
+			hittables = append(hittables, hittable)
+		}
+	}
+
+	// Add the walls to the hittables list
+	for _, wall := range l.Walls.HitBoxes {
+		hittables = append(hittables, wall)
+	}
+
+	// TODO: add the enemies to the hittables list
+
+	return
+}
