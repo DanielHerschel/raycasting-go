@@ -52,13 +52,13 @@ func (g *Game) MainLoop() {
 	g.updateGameObjects()
 
 	// Update camera
-	g.CurrentLevel.Player.Update(g.frameTime, g.CurrentLevel)
+	g.CurrentLevel.Player.Update(g.frameTime, *g.CurrentLevel)
 }
 
 func (g *Game) updateGameObjects() {
 	var indicesToRemove []int
 
-	g.CurrentLevel.GameObjects = o.SortGameObjectsByDistanceToPoint(g.CurrentLevel.Player.Position, g.CurrentLevel.GameObjects)
+	g.CurrentLevel.GameObjects = p.SortGameObjectsByDistanceToPoint(g.CurrentLevel.Player.Position, g.CurrentLevel.GameObjects)
 
 	for index, gameObject := range g.CurrentLevel.GameObjects {
 		// Destroy destroyable objects
@@ -69,6 +69,9 @@ func (g *Game) updateGameObjects() {
 				toDraw = false
 			}
 		}
+
+		// Update game object
+		gameObject.Update(g.frameTime, *g.CurrentLevel)
 
 		// Draw the gameobject's sprite
 		if toDraw {

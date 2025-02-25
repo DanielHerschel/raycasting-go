@@ -5,7 +5,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func CastRay(origin o.IHittable, direction rl.Vector2, hittables []o.IHittable) bool {
+func CastRay(origin o.IHittable, direction rl.Vector2, hittables []o.IHittable) o.IHittable {
 
 	originPosition := origin.GetHitBox().Position
 
@@ -22,10 +22,5 @@ func CastRay(origin o.IHittable, direction rl.Vector2, hittables []o.IHittable) 
 		}
 	}
 
-	if closestHittable != nil {
-		closestHittable.OnHit(origin)
-		return true
-	}
-
-	return false
+	return closestHittable
 }

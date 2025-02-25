@@ -8,7 +8,6 @@ import (
 
 type IHittable interface {
 	GetHitBox() HitBox
-	OnHit(other IHittable)
 }
 
 type IDestroyable interface {

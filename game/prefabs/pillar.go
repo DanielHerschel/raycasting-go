@@ -21,6 +21,10 @@ type Pillar struct {
 }
 
 // IGameObject functions
+func (p Pillar) Update(frameTime float64, currentLevel Level) {
+	// Pillars do not need to be updated.
+}
+
 func (p Pillar) GetTransform() o.Transform {
 	return p.Transform
 }

@@ -21,7 +21,7 @@ func NewLevelFromFile(path string) *Level {
 
 	// Extract game objects data
 	gameObjectsData := levelData.GameObjectsData
-	var gameObjects []o.IGameObject
+	var gameObjects []IGameObject
 	for _, gameObjectData := range gameObjectsData {
 		objectPosition := gameObjectData.Position
 
@@ -30,6 +30,8 @@ func NewLevelFromFile(path string) *Level {
 			gameObjects = append(gameObjects, NewBarrel(float32(objectPosition[0]), float32(objectPosition[1])))
 		case "pillar":
 			gameObjects = append(gameObjects, NewPillar(float32(objectPosition[0]), float32(objectPosition[1])))
+		case "turret":
+			gameObjects = append(gameObjects, NewTurret(float32(objectPosition[0]), float32(objectPosition[1])))
 		}
 	}
 
@@ -54,7 +56,7 @@ type Level struct {
 	WorldMap [][]int
 
 	Player       *Player
-	GameObjects  o.GameObjects
+	GameObjects  GameObjects
 	Walls        Walls
 	FloorCeiling FloorCeiling
 }

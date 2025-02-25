@@ -1,12 +1,14 @@
-package objects
+package prefabs
 
 import (
+	o "github.com/danielherschel/raylib-test/game/objects"
 	u "github.com/danielherschel/raylib-test/game/utils"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type IGameObject interface {
-	GetTransform() Transform
+	GetTransform() o.Transform
+	Update(frameTime float64, currentLevel Level)
 	Close()
 }
 

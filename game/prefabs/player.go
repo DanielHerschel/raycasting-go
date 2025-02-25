@@ -1,6 +1,7 @@
 package prefabs
 
 import (
+	"fmt"
 	"math"
 
 	o "github.com/danielherschel/raylib-test/game/objects"
@@ -10,11 +11,14 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+const GUN_DAMAGE = 2
+
 func NewPlayer(transform o.Transform) *Player {
 	return &Player{
 		transform,
-		o.NewHitBox(transform, 0.4),
+		o.NewHitBox(transform, 0.2),
 		o.NewCamera(transform, u.CAMERA_FOV),
+		10,
 	}
 }
 
@@ -22,19 +26,8 @@ type Player struct {
 	o.Transform
 	o.HitBox
 	Camera *o.Camera
-}
 
-func (p *Player) Update(frameTime float64, currentLevel *Level) {
-	// check what the crosshair is looking at
-	hittables := currentLevel.GetAllHittables()
-	_ = ph.CastRay(p, p.Direction, hittables)
-
-	p.HandleWalking(frameTime, currentLevel.WorldMap)
-	p.HanldeCameraRotation(float32(frameTime))
-
-	// Sync transforms with the player transform
-	p.Camera.Transform = p.Transform
-	p.HitBox.Transform = p.Transform
+	Health int
 }
 
 func (p *Player) HandleWalking(frameTime float64, worldMap [][]int) {
@@ -92,6 +85,28 @@ func (p *Player) HanldeCameraRotation(frameTime float32) {
 }
 
 // IGameObject functions
+func (p *Player) Update(frameTime float64, currentLevel Level) {
+	// Draw health
+	rl.DrawText(fmt.Sprintf("Health: %d", p.Health), 10, 55, 30, rl.White)
+
+	// check what the crosshair is looking at
+	hittables := currentLevel.GetAllHittables()
+	hit := ph.CastRay(p, p.Direction, hittables)
+
+	if damageable, ok := hit.(IDamageable); ok {
+		if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
+			_ = damageable.TakeDamage(GUN_DAMAGE)
+		}
+	}
+
+	p.HandleWalking(frameTime, currentLevel.WorldMap)
+	p.HanldeCameraRotation(float32(frameTime))
+
+	// Sync transforms with the player transform
+	p.Camera.Transform = p.Transform
+	p.HitBox.Transform = p.Transform
+}
+
 func (p Player) GetTransform() o.Transform {
 	return p.Transform
 }
@@ -106,4 +121,17 @@ func (p *Player) GetHitBox() o.HitBox {
 
 func (p *Player) OnHit(other o.IHittable) {
 	// Handle player-enemy collision
+}
+
+// IDamagable functions
+
+func (p *Player) TakeDamage(damage int) {
+	if !p.IsAlive() {
+		return
+	}
+	p.Health -= damage
+}
+
+func (p *Player) IsAlive() bool {
+	return p.Health > 0
 }

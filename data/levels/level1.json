@@ -43,6 +43,8 @@
 
         {"type": "pillar", "position": [18.5, 10.5]},
         {"type": "pillar", "position": [18.5, 11.5]},
-        {"type": "pillar", "position": [18.5, 12.5]}
+        {"type": "pillar", "position": [18.5, 12.5]},
+
+		{"type": "turret", "position": [19.5, 1.5]}
     ]
 }

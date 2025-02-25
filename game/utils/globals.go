@@ -3,7 +3,7 @@ package utils
 const (
 	SCREEN_WIDTH  = 1920
 	SCREEN_HEIGHT = 1080
-	FRAME_RATE = 60
+	FRAME_RATE    = 60
 
 	CAMERA_SPEED = 0.05
 	CAMERA_FOV   = 60
@@ -27,4 +27,13 @@ const (
 	TEXTURE_MOSS_BRICKS  = "assets/textures/mossbricks.png"
 	TEXTURE_WOOD         = "assets/textures/wood.png"
 	TEXTURE_BRICKS       = "assets/textures/bricks.png"
+)
+
+const (
+	BARREL_HEALTH = 2
+
+	TURRET_HEALTH      = 10
+	TURRET_DAMAGE      = 2
+	TURRET_LOOK_RADIUS = 2.0
+	TURRET_FIRE_RATE = 1.0
 )
